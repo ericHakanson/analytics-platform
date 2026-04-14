@@ -1,0 +1,64 @@
+{
+  "title": "Spring seller signal for Middlesex County",
+  "slug": "campaigns/middlesex-county-ma/spring-seller-signal-q2-2026",
+  "route_path": "/campaigns/middlesex-county-ma/spring-seller-signal-q2-2026",
+  "asset_type": "campaign",
+  "audience": [
+    "prospect",
+    "social_audience"
+  ],
+  "market": {
+    "slug": "middlesex-county-ma",
+    "name": "Middlesex County, MA",
+    "geography_scope": "county",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Q2 2026 campaign window",
+    "start_date": "2026-04-01",
+    "end_date": "2026-06-30"
+  },
+  "refresh_cadence": "campaign_bound",
+  "primary_message": "Recent sale and enrichment activity in Middlesex County supports a targeted spring outreach story for home-services operators.",
+  "why_it_matters": "Campaign assets need explicit time framing so outbound and landing-page content stays aligned with the actual campaign window.",
+  "supporting_metrics": [
+    {
+      "metric_key": "sale_events_30d",
+      "label": "Sale events in the last 30 days"
+    },
+    {
+      "metric_key": "enrichment_completion_rate",
+      "label": "Enrichment completion rate"
+    }
+  ],
+  "cta": {
+    "label": "See campaign fit",
+    "target_type": "hubspot_landing_page",
+    "target_url": "https://go.fortisland.example/spring-seller-signal"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": false
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "marketing"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-13T20:45:00Z",
+    "data_as_of": "2026-04-13",
+    "refresh_notes": "Refresh at least weekly during the campaign window.",
+    "source_systems": [
+      "zillow",
+      "redfin",
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "campaign_snapshot",
+    "version": "v1"
+  }
+}

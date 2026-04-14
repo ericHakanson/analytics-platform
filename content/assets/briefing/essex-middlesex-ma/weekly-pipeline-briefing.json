@@ -1,0 +1,63 @@
+{
+  "title": "Weekly Essex and Middlesex pipeline briefing",
+  "slug": "briefings/essex-middlesex-ma/weekly-pipeline-briefing",
+  "route_path": "/briefings/essex-middlesex-ma/weekly-pipeline-briefing",
+  "asset_type": "client_briefing",
+  "audience": [
+    "active_client",
+    "operator"
+  ],
+  "market": {
+    "slug": "essex-middlesex-ma",
+    "name": "Essex and Middlesex Counties, MA",
+    "geography_scope": "multi_county",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Weekly operations snapshot",
+    "start_date": "2026-04-07",
+    "end_date": "2026-04-13"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "The weekly pipeline briefing summarizes event flow, enrichment health, and scored-candidate output across the active coverage footprint.",
+  "why_it_matters": "Client briefing assets should turn operational complexity into a concise, decision-ready narrative without exposing raw table detail.",
+  "supporting_metrics": [
+    {
+      "metric_key": "town_runs_pass_rate",
+      "label": "Town-run pass rate"
+    },
+    {
+      "metric_key": "high_band_candidate_count",
+      "label": "High-band candidate count"
+    }
+  ],
+  "cta": {
+    "label": "Book a review call",
+    "target_type": "email_link",
+    "target_url": "mailto:eric@fortisland.me"
+  },
+  "channel_suitability": {
+    "website": false,
+    "outbound": false,
+    "social": false,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "client_success"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-13T20:45:00Z",
+    "data_as_of": "2026-04-13",
+    "refresh_notes": "Refresh after all eight scheduled shards complete or a partial-cycle exception is documented.",
+    "source_systems": [
+      "zillow",
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "client_pipeline_briefing",
+    "version": "v1"
+  }
+}

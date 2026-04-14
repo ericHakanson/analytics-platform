@@ -1,0 +1,2 @@
+contract_name,contract_version,market_slug,market_name,period_start,period_end,new_sale_events,late_sale_events,scored_properties_count,high_band_candidate_count,high_band_candidate_rate,model_version,data_as_of,last_updated_at
+market_proof_overview,v1,essex-county-ma,"Essex County, MA",2026-01-13,2026-04-13,148,19,86,27,0.3139,v1,2026-04-13,2026-04-13T20:45:00Z

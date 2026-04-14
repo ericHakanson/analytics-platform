@@ -1,0 +1,2 @@
+contract_name,contract_version,market_slug,market_name,cycle_start,cycle_end,town_runs_pass_rate,new_sale_events,late_sale_events,enrichment_completion_rate,high_band_candidate_count,operational_note,data_as_of,last_updated_at
+client_pipeline_briefing,v1,essex-middlesex-ma,"Essex and Middlesex Counties, MA",2026-04-07,2026-04-13,0.95,209,24,0.91,41,"One shard completed partial with recoverable warning volume; commercial signal remained usable.",2026-04-13,2026-04-13T20:45:00Z

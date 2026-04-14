@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fortisland.local/contracts/publishing/campaign_snapshot.v1.schema.json",
+  "title": "campaign_snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_name",
+    "contract_version",
+    "owner",
+    "refresh_cadence",
+    "source_layers",
+    "grain",
+    "date_range",
+    "market",
+    "records"
+  ],
+  "properties": {
+    "contract_name": {
+      "const": "campaign_snapshot"
+    },
+    "contract_version": {
+      "const": "v1"
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "refresh_cadence": {
+      "enum": [
+        "weekly",
+        "campaign_bound"
+      ]
+    },
+    "grain": {
+      "const": "campaign_market_window"
+    },
+    "source_layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "event_layer",
+          "derived_commercial_layer"
+        ]
+      }
+    },
+    "date_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "market": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug",
+        "name"
+      ],
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "market_slug",
+          "period_start",
+          "period_end",
+          "sale_events_30d",
+          "enrichment_completion_rate",
+          "source_mix",
+          "campaign_readiness_note"
+        ],
+        "properties": {
+          "market_slug": {
+            "type": "string"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date"
+          },
+          "sale_events_30d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enrichment_completion_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "source_mix": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source",
+                "source_coverage_share"
+              ],
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "zillow",
+                    "redfin"
+                  ]
+                },
+                "source_coverage_share": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          },
+          "campaign_readiness_note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

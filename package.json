@@ -1,0 +1,35 @@
+{
+  "name": "analytics-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fort Island Evidence-based analytics publishing platform.",
+  "type": "module",
+  "scripts": {
+    "build": "npm run validate:env && evidence build",
+    "build:strict": "evidence build:strict",
+    "dev": "npm run validate:env && evidence dev --open /",
+    "preview": "npm run validate:env && evidence preview",
+    "sources": "npm run validate:env && evidence sources",
+    "sources:strict": "evidence sources --strict",
+    "test": "evidence build",
+    "validate:env": "node scripts/validate-environment.mjs",
+    "validate:metadata": "node scripts/validate-asset-metadata.mjs",
+    "validate:contracts": "node scripts/validate-publishing-contracts.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=7.0.0"
+  },
+  "dependencies": {
+    "@evidence-dev/core-components": "^5.4.2",
+    "@evidence-dev/csv": "^1.0.16",
+    "@evidence-dev/duckdb": "^2.0.1",
+    "@evidence-dev/evidence": "^40.1.8"
+  },
+  "overrides": {
+    "axios": "^1.7.4",
+    "jsonwebtoken": "9.0.0",
+    "sqlite3": "5.1.5",
+    "trim@<0.0.3": ">0.0.3"
+  }
+}

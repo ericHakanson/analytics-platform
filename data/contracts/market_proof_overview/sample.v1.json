@@ -1,0 +1,33 @@
+{
+  "contract_name": "market_proof_overview",
+  "contract_version": "v1",
+  "owner": "fort_island_operator",
+  "refresh_cadence": "weekly",
+  "source_layers": [
+    "canonical_property_layer",
+    "event_layer",
+    "derived_commercial_layer"
+  ],
+  "grain": "market_time_window",
+  "date_range": {
+    "start_date": "2026-01-13",
+    "end_date": "2026-04-13"
+  },
+  "market": {
+    "slug": "essex-county-ma",
+    "name": "Essex County, MA"
+  },
+  "records": [
+    {
+      "market_slug": "essex-county-ma",
+      "period_start": "2026-01-13",
+      "period_end": "2026-04-13",
+      "new_sale_events": 148,
+      "late_sale_events": 19,
+      "scored_properties_count": 86,
+      "high_band_candidate_count": 27,
+      "high_band_candidate_rate": 0.3139,
+      "model_version": "v1"
+    }
+  ]
+}

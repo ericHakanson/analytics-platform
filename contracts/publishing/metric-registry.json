@@ -1,0 +1,74 @@
+{
+  "metrics": [
+    {
+      "metric_key": "new_sale_events",
+      "label": "New sale events",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Count of `property_events` rows where `event_type = NEW_SALE` within the contract date range."
+    },
+    {
+      "metric_key": "late_sale_events",
+      "label": "Late sale events",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Count of `property_events` rows where `event_type = LATE_SALE` within the contract date range."
+    },
+    {
+      "metric_key": "new_listing_events",
+      "label": "New listing events",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Count of `property_events` rows where `event_type = NEW_LISTING` within the contract date range."
+    },
+    {
+      "metric_key": "sale_events_30d",
+      "label": "Sale events in the last 30 days",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Rolling 30-day count of `NEW_SALE` plus `LATE_SALE` property events."
+    },
+    {
+      "metric_key": "high_band_candidate_count",
+      "label": "High-band renovation candidates",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "derived_commercial_layer",
+      "definition": "Count of scored properties where `renovation_band = High` for the relevant market and time window."
+    },
+    {
+      "metric_key": "high_band_candidate_rate",
+      "label": "High-band renovation candidate rate",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "derived_commercial_layer",
+      "definition": "High-band renovation candidates divided by scored properties in the relevant market and time window."
+    },
+    {
+      "metric_key": "enrichment_completion_rate",
+      "label": "Enrichment completion rate",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Succeeded enrichment jobs divided by attempted enrichment jobs in the relevant time window."
+    },
+    {
+      "metric_key": "town_runs_pass_rate",
+      "label": "Town-run pass rate",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "event_layer",
+      "definition": "Share of `town_runs` rows with `status = completed` out of all runs in the selected cycle window."
+    },
+    {
+      "metric_key": "scored_properties_count",
+      "label": "Scored properties",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "derived_commercial_layer",
+      "definition": "Count of properties with a scoring record for the selected model version and date range."
+    },
+    {
+      "metric_key": "source_coverage_share",
+      "label": "Source coverage share",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "derived_commercial_layer",
+      "definition": "Share of observations or events attributable to a source within a source-aware comparison contract."
+    }
+  ]
+}

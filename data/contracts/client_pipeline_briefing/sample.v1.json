@@ -1,0 +1,32 @@
+{
+  "contract_name": "client_pipeline_briefing",
+  "contract_version": "v1",
+  "owner": "fort_island_operator",
+  "refresh_cadence": "weekly",
+  "source_layers": [
+    "event_layer",
+    "derived_commercial_layer"
+  ],
+  "grain": "market_cycle_window",
+  "date_range": {
+    "start_date": "2026-04-07",
+    "end_date": "2026-04-13"
+  },
+  "market": {
+    "slug": "essex-middlesex-ma",
+    "name": "Essex and Middlesex Counties, MA"
+  },
+  "records": [
+    {
+      "market_slug": "essex-middlesex-ma",
+      "cycle_start": "2026-04-07",
+      "cycle_end": "2026-04-13",
+      "town_runs_pass_rate": 0.95,
+      "new_sale_events": 209,
+      "late_sale_events": 24,
+      "enrichment_completion_rate": 0.91,
+      "high_band_candidate_count": 41,
+      "operational_note": "One shard completed partial with recoverable warning volume; commercial signal remained usable."
+    }
+  ]
+}

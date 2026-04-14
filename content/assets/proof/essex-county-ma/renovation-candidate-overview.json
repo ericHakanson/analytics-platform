@@ -1,0 +1,63 @@
+{
+  "title": "Essex County renovation candidate overview",
+  "slug": "proof/essex-county-ma/renovation-candidate-overview",
+  "route_path": "/proof/essex-county-ma/renovation-candidate-overview",
+  "asset_type": "evergreen_proof",
+  "audience": [
+    "public_website_visitor",
+    "prospect"
+  ],
+  "market": {
+    "slug": "essex-county-ma",
+    "name": "Essex County, MA",
+    "geography_scope": "county",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Last 90 days",
+    "start_date": "2026-01-13",
+    "end_date": "2026-04-13"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "Essex County continues to generate a durable stream of scored renovation candidates from new and late sale events.",
+  "why_it_matters": "This asset gives prospects a concrete proof point that the pipeline produces repeatable, localized signal intelligence instead of generic housing commentary.",
+  "supporting_metrics": [
+    {
+      "metric_key": "new_sale_events",
+      "label": "New sale events"
+    },
+    {
+      "metric_key": "scored_candidates_high_band",
+      "label": "High-band renovation candidates"
+    }
+  ],
+  "cta": {
+    "label": "Request a market-specific signal briefing",
+    "target_type": "hubspot_form",
+    "target_url": "https://go.fortisland.example/request-briefing"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "operator"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-13T20:45:00Z",
+    "data_as_of": "2026-04-13",
+    "refresh_notes": "Refresh after the weekly curated county summary job completes.",
+    "source_systems": [
+      "zillow",
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "market_proof_overview",
+    "version": "v1"
+  }
+}

@@ -1,0 +1,4 @@
+name: publishing_contracts
+type: duckdb
+options:
+  filename: ":memory:"

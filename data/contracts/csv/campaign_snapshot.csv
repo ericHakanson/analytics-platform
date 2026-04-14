@@ -1,0 +1,2 @@
+contract_name,contract_version,market_slug,market_name,period_start,period_end,sale_events_30d,enrichment_completion_rate,zillow_coverage_share,redfin_coverage_share,campaign_readiness_note,data_as_of,last_updated_at
+campaign_snapshot,v1,middlesex-county-ma,"Middlesex County, MA",2026-04-01,2026-04-13,173,0.92,0.88,0.12,"Activity volume and enrichment completion support a live spring campaign narrative.",2026-04-13,2026-04-13T20:45:00Z
