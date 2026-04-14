@@ -23,16 +23,10 @@
       "period_end": "2026-04-13",
       "sale_events_30d": 173,
       "enrichment_completion_rate": 0.92,
-      "source_mix": [
-        {
-          "source": "zillow",
-          "source_coverage_share": 0.88
-        },
-        {
-          "source": "redfin",
-          "source_coverage_share": 0.12
-        }
-      ],
+      "zillow_coverage_share": 0.88,
+      "redfin_coverage_share": 0.12,
+      "data_as_of": "2026-04-13",
+      "last_updated_at": "2026-04-13T20:45:00Z",
       "campaign_readiness_note": "Activity volume and enrichment completion support a live spring campaign narrative."
     }
   ]

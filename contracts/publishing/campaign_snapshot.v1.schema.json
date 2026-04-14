@@ -92,7 +92,10 @@
           "period_end",
           "sale_events_30d",
           "enrichment_completion_rate",
-          "source_mix",
+          "zillow_coverage_share",
+          "redfin_coverage_share",
+          "data_as_of",
+          "last_updated_at",
           "campaign_readiness_note"
         ],
         "properties": {
@@ -116,31 +119,23 @@
             "minimum": 0,
             "maximum": 1
           },
-          "source_mix": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "source",
-                "source_coverage_share"
-              ],
-              "properties": {
-                "source": {
-                  "type": "string",
-                  "enum": [
-                    "zillow",
-                    "redfin"
-                  ]
-                },
-                "source_coverage_share": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 1
-                }
-              }
-            }
+          "zillow_coverage_share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "redfin_coverage_share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
           },
           "campaign_readiness_note": {
             "type": "string",

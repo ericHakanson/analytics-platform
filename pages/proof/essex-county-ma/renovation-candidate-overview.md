@@ -3,13 +3,17 @@ title: Essex County Renovation Candidate Overview
 ---
 
 <script>
-  import PublishingPageShell from '../../../../components/layout/PublishingPageShell.svelte';
-  import WhyItMattersBlock from '../../../../components/blocks/WhyItMattersBlock.svelte';
-  import FreshnessBlock from '../../../../components/blocks/FreshnessBlock.svelte';
-  import CaveatsBlock from '../../../../components/blocks/CaveatsBlock.svelte';
-  import CtaFooterBlock from '../../../../components/blocks/CtaFooterBlock.svelte';
+  import PublishingPageShell from '$lib/layout/PublishingPageShell.svelte';
+  import WhyItMattersBlock from '$lib/blocks/WhyItMattersBlock.svelte';
+  import FreshnessBlock from '$lib/blocks/FreshnessBlock.svelte';
+  import CaveatsBlock from '$lib/blocks/CaveatsBlock.svelte';
+  import CtaFooterBlock from '$lib/blocks/CtaFooterBlock.svelte';
+  import assetMetadata from '$content/assets/proof/essex-county-ma/renovation-candidate-overview.json';
 
-  const hubspotFormUrl = `${import.meta.env.VITE_HUBSPOT_FORM_BASE_URL}?utm_source=${import.meta.env.VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE}&utm_medium=proof-page&utm_campaign=market-proof-overview`;
+  const hubspotFormUrl = new URL(import.meta.env.VITE_HUBSPOT_FORM_BASE_URL);
+  hubspotFormUrl.searchParams.set('utm_source', import.meta.env.VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE);
+  hubspotFormUrl.searchParams.set('utm_medium', assetMetadata.cta.utm_medium);
+  hubspotFormUrl.searchParams.set('utm_campaign', assetMetadata.cta.utm_campaign);
   const whyItMattersBullets = [
     'The signal is based on durable `NEW_SALE` and `LATE_SALE` events instead of raw scrape-row volume.',
     'High-band candidate counts connect market activity to a commercial use case rather than a vanity metric.',
@@ -64,7 +68,7 @@ title: Essex County Renovation Candidate Overview
     bullets={whyItMattersBullets}
   />
 
-  <FreshnessBlock data={market_proof_overview} />
+  <FreshnessBlock data={market_proof_overview} contractVersion={assetMetadata.contract.version} />
 
   <section class="rounded-[24px] border border-slate-200 bg-white px-6 py-6 shadow-sm">
     <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Supporting Metrics</h2>
@@ -86,7 +90,7 @@ title: Essex County Renovation Candidate Overview
   <CtaFooterBlock
     title="Request a market-specific briefing"
     text="Use the same proof pattern with a tailored market or customer context when you need a sharper sales or briefing asset."
-    buttonLabel="Request a market-specific briefing"
-    buttonUrl={hubspotFormUrl}
+    buttonLabel={assetMetadata.cta.label}
+    buttonUrl={hubspotFormUrl.toString()}
   />
 </PublishingPageShell>

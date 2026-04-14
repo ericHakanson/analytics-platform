@@ -91,6 +91,11 @@ npm run validate:contracts
 
 The current local mode uses curated sample contract exports so the project can boot cleanly without production credentials.
 
+Template imports should use the stable aliases exposed through SvelteKit and Evidence:
+
+- `$lib/...` for shared Svelte components under `components/`
+- `$content/...` for authoring metadata and content files under `content/`
+
 ## Config modes
 
 - `sample` mode reads local curated exports from `data/contracts/csv`.

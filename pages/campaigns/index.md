@@ -8,6 +8,5 @@ This route group will hold campaign-oriented assets with explicit time context, 
 
 Current state:
 
-- scaffold only
-- waiting on shared blocks in `FOR-253`
+- shared shell, blocks, and metadata conventions are in place
 - waiting on campaign template work in `FOR-256`

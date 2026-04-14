@@ -27,7 +27,9 @@
       "scored_properties_count": 86,
       "high_band_candidate_count": 27,
       "high_band_candidate_rate": 0.3139,
-      "model_version": "v1"
+      "model_version": "v1",
+      "data_as_of": "2026-04-13",
+      "last_updated_at": "2026-04-13T20:45:00Z"
     }
   ]
 }

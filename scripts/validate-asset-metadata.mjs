@@ -1,8 +1,11 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { validateAgainstSchema } from './lib/json-schema-lite.mjs';
 
 const repoRoot = process.cwd();
 const assetsRoot = path.join(repoRoot, 'content', 'assets');
+const schemaPath = path.join(repoRoot, 'contracts', 'publishing', 'asset-metadata.schema.json');
+const metricRegistryPath = path.join(repoRoot, 'contracts', 'publishing', 'metric-registry.json');
 const allowedFamilies = new Set(['proof', 'campaign', 'briefing']);
 const statusValues = new Set(['draft', 'in_review', 'approved', 'published', 'deprecated']);
 const assetTypeByPrefix = new Map([
@@ -44,6 +47,10 @@ function isKebabCase(value) {
 
 async function main() {
   const assetsStats = await stat(assetsRoot);
+  const schema = JSON.parse(await readFile(schemaPath, 'utf8'));
+  const metricRegistry = JSON.parse(await readFile(metricRegistryPath, 'utf8'));
+  const registeredMetricKeys = new Set(metricRegistry.metrics.map((metric) => metric.metric_key));
+
   if (!assetsStats.isDirectory()) {
     throw new Error('content/assets is missing');
   }
@@ -68,6 +75,7 @@ async function main() {
 
     const raw = await readFile(file, 'utf8');
     const metadata = JSON.parse(raw);
+    validateAgainstSchema(schema, metadata, relativePath, errors);
 
     const requiredFields = [
       'title',
@@ -118,6 +126,18 @@ async function main() {
     expect(Array.isArray(metadata.supporting_metrics) && metadata.supporting_metrics.length > 0, `${relativePath}: supporting_metrics must be a non-empty array`, errors);
     expect(typeof metadata.primary_message === 'string' && metadata.primary_message.length > 0, `${relativePath}: primary_message must be a non-empty string`, errors);
     expect(typeof metadata.why_it_matters === 'string' && metadata.why_it_matters.length > 0, `${relativePath}: why_it_matters must be a non-empty string`, errors);
+    expect(metadata.cta && typeof metadata.cta.label === 'string' && metadata.cta.label.length > 0, `${relativePath}: cta.label is required`, errors);
+
+    if (Array.isArray(metadata.supporting_metrics)) {
+      for (const metric of metadata.supporting_metrics) {
+        expect(registeredMetricKeys.has(metric.metric_key), `${relativePath}: metric key "${metric.metric_key}" is not defined in contracts/publishing/metric-registry.json`, errors);
+      }
+    }
+
+    if (metadata.cta && ['hubspot_form', 'hubspot_landing_page'].includes(metadata.cta.target_type)) {
+      expect(typeof metadata.cta.utm_medium === 'string' && metadata.cta.utm_medium.length > 0, `${relativePath}: hubspot CTAs must define cta.utm_medium`, errors);
+      expect(typeof metadata.cta.utm_campaign === 'string' && metadata.cta.utm_campaign.length > 0, `${relativePath}: hubspot CTAs must define cta.utm_campaign`, errors);
+    }
 
     expect(metadata.market && metadata.market.slug === marketSlug, `${relativePath}: market.slug must match the folder market slug`, errors);
     expect(metadata.owner && typeof metadata.owner.name === 'string' && metadata.owner.name.length > 0, `${relativePath}: owner.name is required`, errors);

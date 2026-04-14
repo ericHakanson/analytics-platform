@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { validateAgainstSchema } from './lib/json-schema-lite.mjs';
 
 const repoRoot = process.cwd();
 const contractsRoot = path.join(repoRoot, 'contracts', 'publishing');
@@ -81,6 +82,7 @@ async function main() {
     expect(sample.contract_name === contract.name, `${samplePath}: contract_name mismatch`, errors);
     expect(sample.contract_version === contract.version, `${samplePath}: contract_version mismatch`, errors);
     expect(Array.isArray(sample.records) && sample.records.length > 0, `${samplePath}: records must be a non-empty array`, errors);
+    validateAgainstSchema(schema, sample, samplePath, errors);
 
     for (const metricKey of contract.requiredMetricKeys) {
       expect(metricKeys.has(metricKey), `${contract.name}: required metric key "${metricKey}" missing from metric-registry.json`, errors);

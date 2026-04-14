@@ -93,7 +93,9 @@
           "scored_properties_count",
           "high_band_candidate_count",
           "high_band_candidate_rate",
-          "model_version"
+          "model_version",
+          "data_as_of",
+          "last_updated_at"
         ],
         "properties": {
           "market_slug": {
@@ -131,6 +133,14 @@
           "model_version": {
             "type": "string",
             "pattern": "^v[0-9]+$"
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

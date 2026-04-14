@@ -135,6 +135,8 @@ Important governance additions:
 - `source_systems` in `freshness` ensures source awareness is explicit.
 - `contract.version` prevents silent drift in publishing inputs.
 - `freshness.last_updated_at` and `freshness.data_as_of` distinguish page update time from business-data currency.
+- `supporting_metrics[].metric_key` must resolve to `contracts/publishing/metric-registry.json`.
+- HubSpot CTAs must define UTM attribution in metadata instead of hardcoding it in pages.
 
 ## Lifecycle states
 
@@ -184,6 +186,8 @@ Current scope of validation:
 - enum values
 - slug and route prefix alignment
 - slug and folder naming consistency
+- supporting metric keys against the metric registry
+- required UTM attribution fields for HubSpot CTAs
 
 Later issues may extend validation to:
 

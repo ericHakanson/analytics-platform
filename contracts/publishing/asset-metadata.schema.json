@@ -185,6 +185,14 @@
         "target_url": {
           "type": "string",
           "minLength": 1
+        },
+        "utm_medium": {
+          "type": "string",
+          "minLength": 1
+        },
+        "utm_campaign": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

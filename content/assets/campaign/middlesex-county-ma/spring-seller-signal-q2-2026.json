@@ -34,7 +34,9 @@
   "cta": {
     "label": "See campaign fit",
     "target_type": "hubspot_landing_page",
-    "target_url": "https://go.fortisland.example/spring-seller-signal"
+    "target_url": "https://go.fortisland.example/spring-seller-signal",
+    "utm_medium": "campaign-page",
+    "utm_campaign": "spring-seller-signal-q2-2026"
   },
   "channel_suitability": {
     "website": true,

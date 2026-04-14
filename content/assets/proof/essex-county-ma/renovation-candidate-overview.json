@@ -27,14 +27,16 @@
       "label": "New sale events"
     },
     {
-      "metric_key": "scored_candidates_high_band",
+      "metric_key": "high_band_candidate_count",
       "label": "High-band renovation candidates"
     }
   ],
   "cta": {
     "label": "Request a market-specific signal briefing",
     "target_type": "hubspot_form",
-    "target_url": "https://go.fortisland.example/request-briefing"
+    "target_url": "https://go.fortisland.example/request-briefing",
+    "utm_medium": "proof-page",
+    "utm_campaign": "renovation-candidate-overview"
   },
   "channel_suitability": {
     "website": true,

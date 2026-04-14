@@ -112,6 +112,12 @@ Core business question:
 
 - does current event and enrichment activity support a specific outreach or demand-generation campaign?
 
+Representation note for v1:
+
+- `campaign_snapshot` exposes source coverage share as explicit per-source fields in the Evidence-facing contract rows: `zillow_coverage_share` and `redfin_coverage_share`
+- those fields remain governed by the shared metric definition `source_coverage_share` in the metric registry
+- templates must not invent new per-source coverage columns without a contract update
+
 ### 3. `client_pipeline_briefing` v1
 
 Purpose:
@@ -162,6 +168,8 @@ Shared metric keys for v1:
 - `source_coverage_share`
 
 These metric keys are defined in `contracts/publishing/metric-registry.json`.
+
+For source-aware campaign contracts, `source_coverage_share` may be implemented as contract-specific columns such as `zillow_coverage_share` and `redfin_coverage_share`.
 
 ## Future FastAPI compatibility
 

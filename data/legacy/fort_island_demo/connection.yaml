@@ -1,5 +1,0 @@
-# This file was automatically generated
-name: fort_island_demo
-type: duckdb
-options:
-  filename: fort_island_demo.duckdb

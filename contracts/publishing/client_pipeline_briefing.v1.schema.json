@@ -95,6 +95,8 @@
           "late_sale_events",
           "enrichment_completion_rate",
           "high_band_candidate_count",
+          "data_as_of",
+          "last_updated_at",
           "operational_note"
         ],
         "properties": {
@@ -130,6 +132,14 @@
           "high_band_candidate_count": {
             "type": "integer",
             "minimum": 0
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
           },
           "operational_note": {
             "type": "string",

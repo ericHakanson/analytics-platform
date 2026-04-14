@@ -8,6 +8,5 @@ This route group will hold client briefing pages designed for hosted review and 
 
 Current state:
 
-- scaffold only
-- waiting on metadata conventions in `FOR-250`
+- shared shell, contract conventions, and metadata conventions are in place
 - waiting on client briefing template work in `FOR-257`
