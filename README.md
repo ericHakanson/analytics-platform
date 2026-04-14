@@ -47,6 +47,12 @@ Publishing data contracts live in:
 
 ## Local development
 
+For the full bootstrap procedure, environment variable reference, production build steps, and publish cycle, see:
+
+- `docs/runbooks/local-development-and-publishing.md`
+
+Quick start:
+
 1. Copy the example environment file for local sample-data mode:
 
 ```bash
@@ -65,7 +71,7 @@ npm install
 npm run validate:env
 ```
 
-4. Build local source artifacts:
+4. Build local source artifacts (required before `npm run dev`; runs automatically as part of `npm run build`):
 
 ```bash
 npm run sources

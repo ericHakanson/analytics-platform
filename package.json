@@ -5,7 +5,7 @@
   "description": "Fort Island Evidence-based analytics publishing platform.",
   "type": "module",
   "scripts": {
-    "build": "npm run validate:env && evidence build",
+    "build": "npm run sources && evidence build",
     "build:strict": "evidence build:strict",
     "dev": "npm run validate:env && evidence dev --open /",
     "preview": "npm run validate:env && evidence preview",

@@ -4,10 +4,10 @@ title: Fort Island Analytics Publishing Platform
 
 # Fort Island Analytics Publishing Platform
 
-This repository is a fresh Evidence scaffold for Fort Island's reusable analytics publishing layer.
+This repository is Fort Island's reusable analytics publishing layer, built on Evidence.
 
 <Note status="info">
-  Current focus: the platform foundation is in place; next work is template expansion for proof, campaign, and briefing assets.
+  Foundation and first template wave are complete. Current focus: channel packaging docs, ADR baseline, and next backlog from legacy examples.
 </Note>
 
 ## Purpose
@@ -28,28 +28,22 @@ The platform turns curated real-estate signal datasets into reusable assets for:
 - HubSpot remains the conversion and campaign-distribution layer.
 - Linear remains the canonical source of truth for requirements and QA.
 
-## Scaffold status
+## What is live
 
-The current foundation includes:
+| Asset family | Route group | Status |
+|---|---|---|
+| Evergreen proof | [/proof/](proof/) | Live — Essex County example |
+| Campaign | [/campaigns/](campaigns/) | Live — Middlesex County Q2 2026 |
+| Client briefing | [/briefings/](briefings/) | Live — Essex + Middlesex weekly |
 
-- a real Evidence runtime
-- a Fort Island-specific theme
-- shared publishing layout and reusable content blocks
-- asset metadata and contract validation scripts
-- curated sample contract sources for local development
-- one working proof page backed by the `market_proof_overview` contract
+## What is in place
 
-## Planned route groups
-
-- [Proof assets](proof/)
-- [Campaign assets](campaigns/)
-- [Client briefings](briefings/)
-
-## Next implementation issues
-
-- `FOR-255` implement the evergreen proof template
-- `FOR-256` implement the campaign template
-- `FOR-257` implement the client briefing template
+- Shared layout shell and reusable content blocks (`components/`)
+- Shared SQL query templates (`queries/`)
+- Asset metadata and contract validation (`npm run validate:metadata`, `npm run validate:contracts`)
+- Curated sample contract sources for local development (`data/contracts/csv/`)
+- Local development and publishing runbook (`docs/runbooks/local-development-and-publishing.md`)
+- ADR-009: hosting and deployment model (`docs/architecture/adr-009-hosting-deployment-model.md`)
 
 ## Governance
 

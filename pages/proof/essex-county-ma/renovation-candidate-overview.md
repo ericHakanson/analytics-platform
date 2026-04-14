@@ -31,12 +31,16 @@ title: Essex County Renovation Candidate Overview
 </Note>
 
 ```sql market_proof_overview
+  -- instance of queries/proof/market_proof_overview.sql
+  -- market_slug: essex-county-ma
   select *
   from publishing_contracts.market_proof_overview
   where market_slug = 'essex-county-ma'
 ```
 
 ```sql market_proof_metrics
+  -- instance of queries/proof/market_proof_metrics.sql
+  -- market_slug: essex-county-ma
   select 'New sale events' as metric, new_sale_events as value
   from publishing_contracts.market_proof_overview
   where market_slug = 'essex-county-ma'
