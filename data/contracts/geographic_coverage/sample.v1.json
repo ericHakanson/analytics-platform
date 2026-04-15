@@ -8,8 +8,8 @@
   ],
   "grain": "market_time_window",
   "date_range": {
-    "start_date": "2026-01-13",
-    "end_date": "2026-04-13"
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
   },
   "market": {
     "slug": "essex-county-ma",
@@ -18,12 +18,12 @@
   "records": [
     {
       "market_slug": "essex-county-ma",
-      "period_start": "2026-01-13",
-      "period_end": "2026-04-13",
+      "period_start": "2026-03-15",
+      "period_end": "2026-04-14",
       "zip_count_in_region": 42,
       "zip_count_with_properties": 38,
-      "data_as_of": "2026-04-13",
-      "last_updated_at": "2026-04-13T20:45:00Z"
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
     }
   ]
 }
