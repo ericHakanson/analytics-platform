@@ -69,6 +69,34 @@
       "owner": "publishing_contracts_v1",
       "source_layer": "derived_commercial_layer",
       "definition": "Share of observations or events attributable to a source within a source-aware comparison contract."
+    },
+    {
+      "metric_key": "active_for_sale_count",
+      "label": "Active for-sale listings",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "canonical_property_layer",
+      "definition": "Count of properties with current_state = FOR_SALE in the relevant market and time window."
+    },
+    {
+      "metric_key": "median_sale_price_30d",
+      "label": "Median sale price (30 days)",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "canonical_property_layer",
+      "definition": "Median sale price of properties with a sale event in the last 30 days. Requires a minimum of 3 sales to be reported; null otherwise."
+    },
+    {
+      "metric_key": "zip_count_in_region",
+      "label": "ZIP codes in target region",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "canonical_property_layer",
+      "definition": "Count of ZIP codes defined in target_regions for the relevant geography."
+    },
+    {
+      "metric_key": "zip_count_with_properties",
+      "label": "ZIP codes with tracked properties",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "canonical_property_layer",
+      "definition": "Count of ZIP codes in the target region that have at least one property in the canonical property layer."
     }
   ]
 }

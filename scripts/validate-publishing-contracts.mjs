@@ -44,6 +44,39 @@ const expectedContracts = [
       'enrichment_completion_rate',
       'high_band_candidate_count'
     ]
+  },
+  {
+    name: 'signals_overview',
+    version: 'v1',
+    schemaFile: 'signals_overview.v1.schema.json',
+    sampleFile: path.join('signals_overview', 'sample.v1.json'),
+    requiredMetricKeys: [
+      'sale_events_30d',
+      'scored_properties_count',
+      'high_band_candidate_count',
+      'high_band_candidate_rate'
+    ]
+  },
+  {
+    name: 'market_sale_activity',
+    version: 'v1',
+    schemaFile: 'market_sale_activity.v1.schema.json',
+    sampleFile: path.join('market_sale_activity', 'sample.v1.json'),
+    requiredMetricKeys: [
+      'sale_events_30d',
+      'new_listing_events',
+      'active_for_sale_count'
+    ]
+  },
+  {
+    name: 'geographic_coverage',
+    version: 'v1',
+    schemaFile: 'geographic_coverage.v1.schema.json',
+    sampleFile: path.join('geographic_coverage', 'sample.v1.json'),
+    requiredMetricKeys: [
+      'zip_count_in_region',
+      'zip_count_with_properties'
+    ]
   }
 ];
 
