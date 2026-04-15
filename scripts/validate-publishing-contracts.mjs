@@ -65,7 +65,8 @@ const expectedContracts = [
     requiredMetricKeys: [
       'sale_events_30d',
       'new_listing_events',
-      'active_for_sale_count'
+      'active_for_sale_count',
+      'median_sale_price_30d'
     ]
   },
   {
@@ -75,7 +76,8 @@ const expectedContracts = [
     sampleFile: path.join('geographic_coverage', 'sample.v1.json'),
     requiredMetricKeys: [
       'zip_count_in_region',
-      'zip_count_with_properties'
+      'zip_count_with_properties',
+      'total_properties'
     ]
   }
 ];

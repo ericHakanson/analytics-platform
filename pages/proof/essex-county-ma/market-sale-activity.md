@@ -60,6 +60,15 @@ title: Essex County Market Sale Activity
   where market_slug = 'essex-county-ma'
 ```
 
+```sql sale_geography
+  -- instance of queries/proof/market_sale_activity_geography.sql
+  -- market_slug: essex-county-ma
+  select *
+  from publishing_contracts.market_sale_activity_geography
+  where market_slug = 'essex-county-ma'
+  order by active_for_sale_count desc
+```
+
 <PublishingPageShell
   assetLabel="Evergreen proof asset"
   title="Essex County Market Sale Activity"
@@ -117,6 +126,29 @@ title: Essex County Market Sale Activity
     <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Median Sale Price (30 days)</h2>
 
     <BigValue data={sale_summary} value="median_sale_price_30d" title="Median sale price (30d)" fmt="usd0" />
+  </section>
+
+  <section class="rounded-[24px] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+    <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Active Inventory by Geography</h2>
+
+    <BarChart
+      data={sale_geography}
+      title="Active listings by geography"
+      x=geography_name
+      y=active_for_sale_count
+    />
+  </section>
+
+  <section class="rounded-[24px] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+    <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Median Sale Price by Geography</h2>
+
+    <BarChart
+      data={sale_geography}
+      title="Median sale price by geography"
+      x=geography_name
+      y=median_sale_price_30d
+      fmt="usd0"
+    />
   </section>
 
   <section class="rounded-[24px] border border-slate-200 bg-white px-6 py-6 shadow-sm">

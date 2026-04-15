@@ -35,7 +35,7 @@ title: Essex County Geographic Coverage
 ```sql geo_coverage
 select *
 from publishing_contracts.geographic_coverage
-where market_slug = 'essex-county-ma'
+where county_slug = 'essex-county-ma'
 ```
 
 ```sql geo_coverage_ratio
@@ -44,7 +44,7 @@ select
   zip_count_in_region,
   round(zip_count_with_properties * 1.0 / zip_count_in_region, 4) as coverage_rate
 from publishing_contracts.geographic_coverage
-where market_slug = 'essex-county-ma'
+where county_slug = 'essex-county-ma'
 ```
 
 <PublishingPageShell

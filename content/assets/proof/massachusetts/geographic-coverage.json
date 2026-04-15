@@ -1,0 +1,65 @@
+{
+  "title": "Massachusetts geographic coverage",
+  "slug": "proof/massachusetts/geographic-coverage",
+  "route_path": "/proof/massachusetts/geographic-coverage",
+  "asset_type": "evergreen_proof",
+  "audience": [
+    "public_website_visitor",
+    "prospect",
+    "social_audience"
+  ],
+  "market": {
+    "slug": "massachusetts",
+    "name": "Massachusetts",
+    "geography_scope": "state",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Last 30 days",
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "Fort Island tracks properties across Massachusetts counties with broad ZIP-level coverage, making the statewide footprint visible and commercially credible.",
+  "why_it_matters": "A statewide coverage proof page shows the market footprint directly: how much of each county's ZIP inventory is represented and how many tracked properties back that footprint.",
+  "supporting_metrics": [
+    {
+      "metric_key": "zip_count_in_region",
+      "label": "ZIP codes in region"
+    },
+    {
+      "metric_key": "zip_count_with_properties",
+      "label": "ZIP codes with tracked properties"
+    }
+  ],
+  "cta": {
+    "label": "Request a market-specific signal briefing",
+    "target_type": "hubspot_form",
+    "target_url": "https://go.fortisland.example/request-briefing",
+    "utm_medium": "proof-page",
+    "utm_campaign": "massachusetts-geographic-coverage"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "operator"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-14T12:00:00Z",
+    "data_as_of": "2026-04-14",
+    "refresh_notes": "Refresh after the weekly canonical property layer summary job completes.",
+    "source_systems": [
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "geographic_coverage",
+    "version": "v1"
+  }
+}

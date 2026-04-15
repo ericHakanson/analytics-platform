@@ -97,6 +97,13 @@
       "owner": "publishing_contracts_v1",
       "source_layer": "canonical_property_layer",
       "definition": "Count of ZIP codes in the target region that have at least one property in the canonical property layer."
+    },
+    {
+      "metric_key": "total_properties",
+      "label": "Tracked properties",
+      "owner": "publishing_contracts_v1",
+      "source_layer": "canonical_property_layer",
+      "definition": "Count of canonical properties tracked for the selected geography and reporting window."
     }
   ]
 }

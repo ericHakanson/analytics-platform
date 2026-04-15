@@ -13,7 +13,8 @@
     "grain",
     "date_range",
     "portfolio",
-    "records"
+    "records",
+    "county_records"
   ],
   "properties": {
     "contract_name": {
@@ -38,6 +39,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "canonical_property_layer",
           "event_layer",
           "derived_commercial_layer"
         ]
@@ -137,6 +139,57 @@
           "model_version": {
             "type": "string",
             "pattern": "^v[0-9]+$"
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "county_records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "portfolio_slug",
+          "state_county_id",
+          "fips_code",
+          "county",
+          "state_code",
+          "total_properties",
+          "data_as_of",
+          "last_updated_at"
+        ],
+        "properties": {
+          "portfolio_slug": {
+            "type": "string"
+          },
+          "state_county_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fips_code": {
+            "type": "string",
+            "pattern": "^[0-9]{5}$"
+          },
+          "county": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state_code": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "total_properties": {
+            "type": "integer",
+            "minimum": 0
           },
           "data_as_of": {
             "type": "string",

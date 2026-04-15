@@ -13,7 +13,9 @@
     "grain",
     "date_range",
     "market",
-    "records"
+    "records",
+    "weekly_records",
+    "geography_records"
   ],
   "properties": {
     "contract_name": {
@@ -130,7 +132,100 @@
             "minimum": 0
           },
           "median_sale_price_30d": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "weekly_records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "market_slug",
+          "week_start",
+          "new_sale_events",
+          "late_sale_events",
+          "new_listing_events",
+          "data_as_of",
+          "last_updated_at"
+        ],
+        "properties": {
+          "market_slug": {
+            "type": "string"
+          },
+          "week_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "new_sale_events": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "late_sale_events": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "new_listing_events": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "geography_records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "market_slug",
+          "geography_name",
+          "active_for_sale_count",
+          "median_sale_price_30d",
+          "data_as_of",
+          "last_updated_at"
+        ],
+        "properties": {
+          "market_slug": {
+            "type": "string"
+          },
+          "geography_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "active_for_sale_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "median_sale_price_30d": {
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": 0
           },
           "data_as_of": {

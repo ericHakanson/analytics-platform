@@ -12,6 +12,7 @@ This route group holds reusable evergreen proof pages for website credibility, o
 - [Essex County Geographic Coverage](essex-county-ma/geographic-coverage) — `geographic_coverage` v1
 - [Essex County Market Sale Activity](essex-county-ma/market-sale-activity) — `market_sale_activity` v1
 - [Massachusetts Signals Overview](massachusetts/signals-overview) — `signals_overview` v1
+- [Massachusetts Geographic Coverage](massachusetts/geographic-coverage) — `geographic_coverage` v1
 
 ## Adding a new proof market
 

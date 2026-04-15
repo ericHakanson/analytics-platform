@@ -1,2 +1,15 @@
-contract_name,contract_version,market_slug,market_name,period_start,period_end,zip_count_in_region,zip_count_with_properties,data_as_of,last_updated_at
-geographic_coverage,v1,essex-county-ma,"Essex County, MA",2026-03-15,2026-04-14,42,38,2026-04-14,2026-04-14T12:00:00Z
+state_slug,county_slug,county_name,state_code,fips_code,period_start,period_end,zip_count_in_region,zip_count_with_properties,total_properties,data_as_of,last_updated_at
+massachusetts,barnstable-county-ma,Barnstable,MA,25001,2026-03-15,2026-04-14,15,12,156,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,berkshire-county-ma,Berkshire,MA,25003,2026-03-15,2026-04-14,24,19,134,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,bristol-county-ma,Bristol,MA,25005,2026-03-15,2026-04-14,31,28,378,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,dukes-county-ma,Dukes,MA,25007,2026-03-15,2026-04-14,6,4,43,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,essex-county-ma,Essex,MA,25009,2026-03-15,2026-04-14,42,38,487,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,franklin-county-ma,Franklin,MA,25011,2026-03-15,2026-04-14,26,18,89,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,hampden-county-ma,Hampden,MA,25013,2026-03-15,2026-04-14,27,22,298,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,hampshire-county-ma,Hampshire,MA,25015,2026-03-15,2026-04-14,24,20,187,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,middlesex-county-ma,Middlesex,MA,25017,2026-03-15,2026-04-14,54,51,1247,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,nantucket-county-ma,Nantucket,MA,25019,2026-03-15,2026-04-14,2,2,28,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,norfolk-county-ma,Norfolk,MA,25021,2026-03-15,2026-04-14,28,26,634,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,plymouth-county-ma,Plymouth,MA,25023,2026-03-15,2026-04-14,32,27,412,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,suffolk-county-ma,Suffolk,MA,25025,2026-03-15,2026-04-14,13,13,521,2026-04-14,2026-04-14T12:00:00Z
+massachusetts,worcester-county-ma,Worcester,MA,25027,2026-03-15,2026-04-14,40,35,892,2026-04-14,2026-04-14T12:00:00Z

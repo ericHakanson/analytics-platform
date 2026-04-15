@@ -30,5 +30,165 @@
       "data_as_of": "2026-04-14",
       "last_updated_at": "2026-04-14T12:00:00Z"
     }
+  ],
+  "weekly_records": [
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-01-26",
+      "new_sale_events": 12,
+      "late_sale_events": 3,
+      "new_listing_events": 28,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-02-02",
+      "new_sale_events": 9,
+      "late_sale_events": 2,
+      "new_listing_events": 22,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-02-09",
+      "new_sale_events": 14,
+      "late_sale_events": 4,
+      "new_listing_events": 31,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-02-16",
+      "new_sale_events": 11,
+      "late_sale_events": 2,
+      "new_listing_events": 26,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-02-23",
+      "new_sale_events": 13,
+      "late_sale_events": 3,
+      "new_listing_events": 29,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-03-02",
+      "new_sale_events": 10,
+      "late_sale_events": 1,
+      "new_listing_events": 24,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-03-09",
+      "new_sale_events": 15,
+      "late_sale_events": 5,
+      "new_listing_events": 33,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-03-16",
+      "new_sale_events": 12,
+      "late_sale_events": 2,
+      "new_listing_events": 27,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-03-23",
+      "new_sale_events": 16,
+      "late_sale_events": 4,
+      "new_listing_events": 35,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-03-30",
+      "new_sale_events": 11,
+      "late_sale_events": 3,
+      "new_listing_events": 25,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-04-06",
+      "new_sale_events": 14,
+      "late_sale_events": 2,
+      "new_listing_events": 30,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "week_start": "2026-04-13",
+      "new_sale_events": 11,
+      "late_sale_events": 1,
+      "new_listing_events": 23,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    }
+  ],
+  "geography_records": [
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Andover",
+      "active_for_sale_count": 18,
+      "median_sale_price_30d": 625000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Beverly",
+      "active_for_sale_count": 14,
+      "median_sale_price_30d": 538000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Gloucester",
+      "active_for_sale_count": 11,
+      "median_sale_price_30d": 712000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Haverhill",
+      "active_for_sale_count": 16,
+      "median_sale_price_30d": 465000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Lynn",
+      "active_for_sale_count": 17,
+      "median_sale_price_30d": 490000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "market_slug": "essex-county-ma",
+      "geography_name": "Salem",
+      "active_for_sale_count": 13,
+      "median_sale_price_30d": 552000,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    }
   ]
 }

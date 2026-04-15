@@ -3,10 +3,20 @@
   "contract_version": "v1",
   "owner": "fort_island_operator",
   "refresh_cadence": "weekly",
-  "source_layers": ["event_layer", "derived_commercial_layer"],
+  "source_layers": [
+    "canonical_property_layer",
+    "event_layer",
+    "derived_commercial_layer"
+  ],
   "grain": "portfolio_time_window",
-  "date_range": { "start_date": "2026-03-15", "end_date": "2026-04-14" },
-  "portfolio": { "slug": "massachusetts", "name": "Massachusetts" },
+  "date_range": {
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
+  },
+  "portfolio": {
+    "slug": "massachusetts",
+    "name": "Massachusetts"
+  },
   "records": [
     {
       "portfolio_slug": "massachusetts",
@@ -19,6 +29,148 @@
       "high_band_candidate_count": 127,
       "high_band_candidate_rate": 0.3083,
       "model_version": "v1",
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    }
+  ],
+  "county_records": [
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Barnstable",
+      "fips_code": "25001",
+      "county": "Barnstable",
+      "state_code": "MA",
+      "total_properties": 156,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Berkshire",
+      "fips_code": "25003",
+      "county": "Berkshire",
+      "state_code": "MA",
+      "total_properties": 134,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Bristol",
+      "fips_code": "25005",
+      "county": "Bristol",
+      "state_code": "MA",
+      "total_properties": 378,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Dukes",
+      "fips_code": "25007",
+      "county": "Dukes",
+      "state_code": "MA",
+      "total_properties": 43,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Essex",
+      "fips_code": "25009",
+      "county": "Essex",
+      "state_code": "MA",
+      "total_properties": 487,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Franklin",
+      "fips_code": "25011",
+      "county": "Franklin",
+      "state_code": "MA",
+      "total_properties": 89,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Hampden",
+      "fips_code": "25013",
+      "county": "Hampden",
+      "state_code": "MA",
+      "total_properties": 298,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Hampshire",
+      "fips_code": "25015",
+      "county": "Hampshire",
+      "state_code": "MA",
+      "total_properties": 187,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Middlesex",
+      "fips_code": "25017",
+      "county": "Middlesex",
+      "state_code": "MA",
+      "total_properties": 1247,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Nantucket",
+      "fips_code": "25019",
+      "county": "Nantucket",
+      "state_code": "MA",
+      "total_properties": 28,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Norfolk",
+      "fips_code": "25021",
+      "county": "Norfolk",
+      "state_code": "MA",
+      "total_properties": 634,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Plymouth",
+      "fips_code": "25023",
+      "county": "Plymouth",
+      "state_code": "MA",
+      "total_properties": 412,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Suffolk",
+      "fips_code": "25025",
+      "county": "Suffolk",
+      "state_code": "MA",
+      "total_properties": 521,
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    },
+    {
+      "portfolio_slug": "massachusetts",
+      "state_county_id": "MA-Worcester",
+      "fips_code": "25027",
+      "county": "Worcester",
+      "state_code": "MA",
+      "total_properties": 892,
       "data_as_of": "2026-04-14",
       "last_updated_at": "2026-04-14T12:00:00Z"
     }

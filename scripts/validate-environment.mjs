@@ -62,7 +62,13 @@ if (env.EVIDENCE_VAR__contract_root) {
     const requiredFiles = [
       'market_proof_overview.csv',
       'campaign_snapshot.csv',
-      'client_pipeline_briefing.csv'
+      'client_pipeline_briefing.csv',
+      'signals_overview.csv',
+      'signals_overview_county.csv',
+      'market_sale_activity.csv',
+      'market_sale_activity_weekly.csv',
+      'market_sale_activity_geography.csv',
+      'geographic_coverage.csv'
     ];
 
     for (const file of requiredFiles) {

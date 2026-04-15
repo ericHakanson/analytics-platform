@@ -12,7 +12,7 @@
     "source_layers",
     "grain",
     "date_range",
-    "market",
+    "state",
     "records"
   ],
   "properties": {
@@ -30,7 +30,7 @@
       "const": "weekly"
     },
     "grain": {
-      "const": "market_time_window"
+      "const": "state_county_time_window"
     },
     "source_layers": {
       "type": "array",
@@ -38,9 +38,7 @@
       "items": {
         "type": "string",
         "enum": [
-          "canonical_property_layer",
-          "event_layer",
-          "derived_commercial_layer"
+          "canonical_property_layer"
         ]
       }
     },
@@ -62,12 +60,13 @@
         }
       }
     },
-    "market": {
+    "state": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "slug",
-        "name"
+        "name",
+        "state_code"
       ],
       "properties": {
         "slug": {
@@ -75,6 +74,10 @@
         },
         "name": {
           "type": "string"
+        },
+        "state_code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
         }
       }
     },
@@ -85,17 +88,36 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "market_slug",
+          "state_slug",
+          "county_slug",
+          "county_name",
+          "state_code",
+          "fips_code",
           "period_start",
           "period_end",
           "zip_count_in_region",
           "zip_count_with_properties",
+          "total_properties",
           "data_as_of",
           "last_updated_at"
         ],
         "properties": {
-          "market_slug": {
+          "state_slug": {
             "type": "string"
+          },
+          "county_slug": {
+            "type": "string"
+          },
+          "county_name": {
+            "type": "string"
+          },
+          "state_code": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "fips_code": {
+            "type": "string",
+            "pattern": "^[0-9]{5}$"
           },
           "period_start": {
             "type": "string",
@@ -110,6 +132,10 @@
             "minimum": 0
           },
           "zip_count_with_properties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total_properties": {
             "type": "integer",
             "minimum": 0
           },
