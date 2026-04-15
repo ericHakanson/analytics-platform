@@ -1,0 +1,13 @@
+contract_name,contract_version,market_slug,week_start,new_sale_events,late_sale_events,new_listing_events,data_as_of,last_updated_at
+market_sale_activity_weekly,v1,essex-county-ma,2026-01-26,12,3,28,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-02-02,9,2,22,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-02-09,14,4,31,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-02-16,11,2,26,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-02-23,13,3,29,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-03-02,10,1,24,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-03-09,15,5,33,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-03-16,12,2,27,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-03-23,16,4,35,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-03-30,11,3,25,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-04-06,14,2,30,2026-04-14,2026-04-14T12:00:00Z
+market_sale_activity_weekly,v1,essex-county-ma,2026-04-13,11,1,23,2026-04-14,2026-04-14T12:00:00Z

@@ -1,0 +1,65 @@
+{
+  "title": "Essex County market sale activity",
+  "slug": "proof/essex-county-ma/market-sale-activity",
+  "route_path": "/proof/essex-county-ma/market-sale-activity",
+  "asset_type": "evergreen_proof",
+  "audience": [
+    "public_website_visitor",
+    "prospect"
+  ],
+  "market": {
+    "slug": "essex-county-ma",
+    "name": "Essex County, MA",
+    "geography_scope": "county",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Last 30 days",
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "Essex County is generating a steady stream of sale events and maintains active inventory depth, confirming a commercially viable market signal.",
+  "why_it_matters": "This asset gives prospects a concrete proof point that Fort Island tracks real market velocity — durable sale events and live inventory counts — without exposing internal ops or scoring model data.",
+  "supporting_metrics": [
+    {
+      "metric_key": "sale_events_30d",
+      "label": "Sale events in the last 30 days"
+    },
+    {
+      "metric_key": "active_for_sale_count",
+      "label": "Active for-sale listings"
+    }
+  ],
+  "cta": {
+    "label": "Request a market-specific signal briefing",
+    "target_type": "hubspot_form",
+    "target_url": "https://go.fortisland.example/request-briefing",
+    "utm_medium": "proof-page",
+    "utm_campaign": "market-sale-activity"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "operator"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-14T12:00:00Z",
+    "data_as_of": "2026-04-14",
+    "refresh_notes": "Refresh after the weekly curated county summary job completes.",
+    "source_systems": [
+      "zillow",
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "market_sale_activity",
+    "version": "v1"
+  }
+}
