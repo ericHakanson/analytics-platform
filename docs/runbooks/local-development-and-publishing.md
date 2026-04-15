@@ -242,6 +242,8 @@ HubSpot does not:
 
 For full CTA destination rules by asset family, UTM attribution conventions, URL composition patterns, and anti-patterns, see `docs/integrations/hubspot-cta-conventions.md`.
 
+For approved Squarespace link-out, teaser, and embed patterns — and what Squarespace must not own — see `docs/integrations/squarespace-integration.md`.
+
 ---
 
 ## 7. Maintenance expectations
@@ -277,3 +279,67 @@ Contract changes require coordination with the upstream data pipeline. See `docs
 2. Create the corresponding page under `pages/{route_group}/{market_slug}/{asset_slug}.md`.
 3. Run `npm run validate:metadata` to confirm the metadata file is valid.
 4. Follow the lifecycle state rules in `docs/architecture/asset-conventions.md`: start at `draft`, progress through `in_review` and `approved` before setting `published`.
+
+---
+
+## 8. Troubleshooting
+
+### `npm run validate:env` fails
+
+**Missing variable:** Add the variable to `.env`. All required variables are listed in section 2 above and in `docs/runbooks/environment-and-config.md`.
+
+**Invalid `PUBLISHING_DATA_MODE`:** Only `sample` and `curated_export` are valid values. Check for typos or trailing whitespace.
+
+**`EVIDENCE_VAR__contract_root` directory does not exist:** Create the directory or correct the path. In `sample` mode it defaults to `./data/contracts/csv`, which must exist and contain the expected CSV files.
+
+**Required sample CSV missing:** In `sample` mode, `validate:env` checks that the expected CSV files are present in `EVIDENCE_VAR__contract_root`. If a file is missing, check `data/contracts/csv/` and ensure the fixture was not accidentally deleted. Fixtures are tracked in git.
+
+---
+
+### `npm run sources` fails
+
+Sources runs `validate:env` first. If sources fails, check the validate:env output first. If the env check passes but sources still fails, check for malformed Evidence datasource definitions under `sources/`.
+
+---
+
+### `npm run dev` shows no data or blank charts
+
+**Sources not generated:** Run `npm run sources` before `npm run dev`. The dev server does not generate sources automatically on first run.
+
+**Wrong `PUBLISHING_DATA_MODE`:** In local development, `PUBLISHING_DATA_MODE` must be `sample`. If it is set to `curated_export` and `EVIDENCE_VAR__contract_root` points to a non-existent or empty directory, queries will return no rows.
+
+**CSV fixture empty or mismatched schema:** If a query references a column that does not exist in the sample CSV, Evidence will render the chart with no data. Check the sample fixture in `data/contracts/csv/` against the contract schema in `contracts/publishing/`.
+
+---
+
+### `npm run build` produces a build but pages show error or no data
+
+**Sources not current:** `npm run build` runs `npm run sources` automatically, but if `PUBLISHING_DATA_MODE=curated_export` and `EVIDENCE_VAR__contract_root` is wrong or empty, queries will return no rows. Verify the path and that the export files are present.
+
+**`VITE_PUBLIC_SITE_BASE_URL` wrong:** If absolute links in the built output are broken (e.g., CTA buttons go to localhost), check that `VITE_PUBLIC_SITE_BASE_URL` is set to the correct production domain.
+
+---
+
+### `npm run validate:metadata` fails
+
+**Schema violation:** Check the error output for which field failed. The schema is at `contracts/publishing/asset-metadata.schema.json`. Common issues: missing required fields, invalid `lifecycle_state` value, metric key not found in `contracts/publishing/metric-registry.json`.
+
+**Slug/folder mismatch:** The asset slug in the metadata file must match the filename and the directory it lives in. Check `docs/architecture/asset-conventions.md` for naming rules.
+
+---
+
+### `npm run validate:contracts` fails
+
+**Sample fixture does not match schema:** The fixture in `data/contracts/csv/` must satisfy the corresponding contract schema in `contracts/publishing/`. If the schema was updated but the fixture was not, update the fixture.
+
+---
+
+### Evidence dev server port conflict
+
+If `http://localhost:3000` is already in use, Evidence will pick the next available port and print the URL in the terminal output. Check the terminal for the actual URL after `npm run dev`.
+
+---
+
+### Build output location
+
+The production build output is at `.evidence/template/.svelte-kit/output`. This directory is gitignored. If you need to inspect the built output locally, run `npm run build` and look there.

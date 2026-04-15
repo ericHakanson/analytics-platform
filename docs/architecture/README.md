@@ -20,4 +20,8 @@ Current repo-level implementation conventions include:
 
 ## Architecture Decision Records
 
+- `docs/architecture/adr-001-start-fresh.md` — start fresh rather than migrate legacy dashboards (FOR-261)
+- `docs/architecture/adr-002-evidence-as-publishing-layer.md` — Evidence.dev as the analytics publishing layer (FOR-261)
+- `docs/architecture/adr-003-curated-data-boundary.md` — publishing platform reads curated exports only; no direct database access (FOR-261)
+- `docs/architecture/adr-004-modular-monolith.md` — single-repo, all asset families; modular monolith stance (FOR-261)
 - `docs/architecture/adr-009-hosting-deployment-model.md` — hosting and deployment model; URL strategy; Squarespace and HubSpot ownership boundaries; Evidence Studio as an optional deployment target (FOR-262, FOR-263)

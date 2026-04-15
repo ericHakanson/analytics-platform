@@ -66,7 +66,7 @@ These paths correspond directly to the `pages/` route structure. The `VITE_PUBLI
 
 ### 4. Evidence Studio (optional hosted deployment)
 
-Evidence Studio is Anthropic's managed, cloud-hosted Evidence platform. It is one valid option for the hosted production deployment target.
+Evidence Studio is Evidence's managed, cloud-hosted publishing platform. It is one valid option for the hosted production deployment target.
 
 Evidence Studio is suitable for this workload if the curated export path (`EVIDENCE_VAR__contract_root`) can be mounted or fetched at build time within the Studio build pipeline. It does not change:
 
@@ -111,8 +111,8 @@ Rejected. HubSpot is the CTA and campaign-distribution layer. Analytics asset CT
 | Analytics publishing platform | This repo + hosting target | Produces and serves analytics pages |
 | Squarespace | Brand / marketing team | Brand shell; links or embeds analytics URLs |
 | HubSpot | Marketing ops | Receives CTA handoffs from analytics pages; owns campaign tracking and forms |
-| Evidence (tool) | Evidence / Anthropic | Framework; generates static site from `.md` pages |
-| Evidence Studio (optional) | Anthropic (managed) | Optional managed hosting for Evidence projects |
+| Evidence (tool) | Evidence | Framework; generates static site from `.md` pages |
+| Evidence Studio (optional) | Evidence (managed) | Optional managed hosting for Evidence projects |
 
 ## URL strategy
 
@@ -132,3 +132,12 @@ Slug conventions are defined in `docs/architecture/asset-conventions.md`.
 - `VITE_PUBLIC_SITE_BASE_URL` must be validated as part of the production build checklist (it is already required by `npm run validate:env`).
 - Evidence Studio adoption is a CI/CD configuration task, not an architecture task.
 - Squarespace and HubSpot integration docs must reference the analytics platform's hosted URL, not localhost or a staging URL.
+
+## Revisit triggers
+
+Revisit this ADR if any of the following occur:
+
+- **Hosting target locked in:** Once a specific hosting target (e.g., Vercel, S3+CloudFront) is selected as the production default, create a follow-on ADR capturing that choice and its CI/CD implications.
+- **Evidence Studio is evaluated for production use:** If Evidence Studio's build environment can mount the curated export path, evaluate it as the default hosting target and update this ADR.
+- **Real-time or server-side rendering is required:** If static output is no longer sufficient (e.g., live data without a publish cycle), the SvelteKit node adapter or an alternative framework would need to be considered.
+- **Squarespace or HubSpot ownership boundaries change:** If Squarespace begins serving static assets or HubSpot begins hosting analytics content, the ownership table must be revised.
