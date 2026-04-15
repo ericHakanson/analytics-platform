@@ -1,0 +1,2 @@
+contract_name,contract_version,portfolio_slug,portfolio_name,period_start,period_end,sale_events_30d,new_sale_events,late_sale_events,scored_properties_count,high_band_candidate_count,high_band_candidate_rate,model_version,data_as_of,last_updated_at
+signals_overview,v1,massachusetts,Massachusetts,2026-03-15,2026-04-14,284,231,53,412,127,0.3083,v1,2026-04-14,2026-04-14T12:00:00Z

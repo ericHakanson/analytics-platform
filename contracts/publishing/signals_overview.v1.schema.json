@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fortisland.local/contracts/publishing/signals_overview.v1.schema.json",
+  "title": "signals_overview v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_name",
+    "contract_version",
+    "owner",
+    "refresh_cadence",
+    "source_layers",
+    "grain",
+    "date_range",
+    "portfolio",
+    "records"
+  ],
+  "properties": {
+    "contract_name": {
+      "const": "signals_overview"
+    },
+    "contract_version": {
+      "const": "v1"
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "refresh_cadence": {
+      "const": "weekly"
+    },
+    "grain": {
+      "const": "portfolio_time_window"
+    },
+    "source_layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "event_layer",
+          "derived_commercial_layer"
+        ]
+      }
+    },
+    "date_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "portfolio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug",
+        "name"
+      ],
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "portfolio_slug",
+          "period_start",
+          "period_end",
+          "sale_events_30d",
+          "new_sale_events",
+          "late_sale_events",
+          "scored_properties_count",
+          "high_band_candidate_count",
+          "high_band_candidate_rate",
+          "model_version",
+          "data_as_of",
+          "last_updated_at"
+        ],
+        "properties": {
+          "portfolio_slug": {
+            "type": "string"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date"
+          },
+          "sale_events_30d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "new_sale_events": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "late_sale_events": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scored_properties_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "high_band_candidate_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "high_band_candidate_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "model_version": {
+            "type": "string",
+            "pattern": "^v[0-9]+$"
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

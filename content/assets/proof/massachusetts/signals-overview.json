@@ -1,0 +1,66 @@
+{
+  "title": "Massachusetts signals overview",
+  "slug": "proof/massachusetts/signals-overview",
+  "route_path": "/proof/massachusetts/signals-overview",
+  "asset_type": "evergreen_proof",
+  "audience": [
+    "public_website_visitor",
+    "prospect",
+    "social_audience"
+  ],
+  "market": {
+    "slug": "massachusetts",
+    "name": "Massachusetts",
+    "geography_scope": "state",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Last 30 days",
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "Massachusetts generates a consistent stream of sale events and high-band renovation candidates across all 14 counties, confirming the portfolio produces actionable commercial signal at state scale.",
+  "why_it_matters": "Portfolio-scale signal gives prospects a credible proof point that Fort Island's pipeline delivers repeatable renovation intelligence across geographies, not just in isolated markets.",
+  "supporting_metrics": [
+    {
+      "metric_key": "sale_events_30d",
+      "label": "Sale events in the last 30 days"
+    },
+    {
+      "metric_key": "high_band_candidate_count",
+      "label": "High-band renovation candidates"
+    }
+  ],
+  "cta": {
+    "label": "Request a market-specific signal briefing",
+    "target_type": "hubspot_form",
+    "target_url": "https://go.fortisland.example/request-briefing",
+    "utm_medium": "proof-page",
+    "utm_campaign": "signals-overview"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "operator"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-14T12:00:00Z",
+    "data_as_of": "2026-04-14",
+    "refresh_notes": "Refresh after the weekly portfolio summary job completes.",
+    "source_systems": [
+      "zillow",
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "signals_overview",
+    "version": "v1"
+  }
+}
