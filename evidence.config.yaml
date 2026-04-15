@@ -53,3 +53,4 @@ plugins:
   datasources:
     "@evidence-dev/csv": {}
     "@evidence-dev/duckdb": {}
+    "@evidence-dev/postgres": {}
