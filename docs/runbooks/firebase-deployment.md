@@ -1,0 +1,120 @@
+# Firebase Deployment Runbook
+
+Deploying the Evidence analytics dashboard to Firebase Hosting at `signals.fortisland.me`.
+
+## Architecture
+
+```
+Cloud SQL (PostgreSQL) → evidence sources → npm run build:production → ./build → firebase deploy → signals.fortisland.me
+```
+
+The build is fully static — Evidence materializes all SQL queries at build time and ships parquet + pre-rendered HTML. Firebase Hosting serves static files only; no server-side compute.
+
+## Prerequisites
+
+### One-time setup
+
+1. **Install Firebase CLI**
+   ```sh
+   npm install -g firebase-tools
+   ```
+
+2. **Authenticate**
+   ```sh
+   firebase login
+   ```
+
+3. **Create the Firebase project** (if not done)
+   - Go to console.firebase.google.com
+   - Create project `fortisland-signals` (or update `.firebaserc` to match your project ID)
+
+4. **Connect custom domain** in Firebase Hosting console
+   - Add `signals.fortisland.me`
+   - Follow DNS verification steps (Firebase will provide TXT + A records)
+   - DNS propagation can take up to 24 hours
+
+5. **Ensure `connection.options.yaml` is present locally**
+   ```sh
+   ls sources/google_cloud_postgresql/connection.options.yaml
+   ```
+   This file is gitignored. See [local-development-and-publishing.md](local-development-and-publishing.md) for credential format.
+
+## Deploying
+
+```sh
+npm run deploy
+```
+
+This runs `build:production` (which runs `sources` → `evidence build` with `NODE_ENV=production`) then `firebase deploy --only hosting`.
+
+Typical deploy time: 3–5 minutes (dominated by the `sources` step querying Cloud SQL).
+
+### What `build:production` does differently from `build`
+
+- Loads `.env.production` automatically (Vite picks this up when `NODE_ENV=production`)
+- Sets `VITE_PUBLIC_SITE_BASE_URL=https://signals.fortisland.me`
+- Sets `VITE_PUBLISHING_ENV=production`
+
+## Freshness
+
+The dashboard is a **static snapshot** built at deploy time. The `built_at` date shown on the page reflects when `npm run deploy` was last run. To refresh the numbers, re-deploy.
+
+For automated refresh, set up a scheduled Cloud Run job or GitHub Actions workflow that:
+1. Checks out the repo
+2. Writes `connection.options.yaml` from CI secrets
+3. Runs `npm run deploy`
+
+## CI/CD Credential Injection
+
+Evidence reads connection credentials from `connection.options.yaml` at build time. For CI, use `EVIDENCE_SOURCE__` environment variables instead:
+
+```sh
+EVIDENCE_SOURCE__google_cloud_postgresql__host=<base64>
+EVIDENCE_SOURCE__google_cloud_postgresql__database=<base64>
+EVIDENCE_SOURCE__google_cloud_postgresql__user=<base64>
+EVIDENCE_SOURCE__google_cloud_postgresql__password=<base64>
+EVIDENCE_SOURCE__google_cloud_postgresql__port=5432
+```
+
+All string values must be base64-encoded (Evidence calls `decodeBase64Deep()` on all string config values). Integers like `port` are passed as-is.
+
+Encode a value:
+```sh
+echo -n "real_estate" | base64
+```
+
+## Firebase Hosting Configuration
+
+Key settings in `firebase.json`:
+
+- `"public": "build"` — serves from the `./build` output directory
+- `"cleanUrls": true` — strips `.html` from URLs (matches Evidence's routing)
+- **No `X-Frame-Options` header** — intentionally omitted so Squarespace can iframe embed pages
+- `/_evidence/**` assets get 1-year immutable cache (content-hashed filenames)
+- All other routes: 1-hour cache with stale-while-revalidate
+
+## Squarespace Embedding
+
+After deploy, embed any page on Squarespace using a Code Block:
+
+```html
+<iframe
+  src="https://signals.fortisland.me/signals-overview"
+  width="100%"
+  style="min-height: 900px; border: none;"
+  loading="lazy"
+  title="Fort Island Signals Overview"
+></iframe>
+```
+
+For a full-page link-out, use a Button block pointing to `https://signals.fortisland.me/signals-overview`.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `firebase: command not found` | CLI not installed | `npm install -g firebase-tools` |
+| `Error: Project not found` | `.firebaserc` project ID wrong | Update `.firebaserc` or run `firebase use <project-id>` |
+| Build fails with "connection error" | `connection.options.yaml` missing or wrong credentials | Verify file exists; check base64 encoding |
+| Page shows stale data | Build ran against old snapshot | Re-run `npm run deploy` |
+| iframe blocked on Squarespace | `X-Frame-Options` or CSP header set | Check `firebase.json` headers; ensure no `X-Frame-Options` for the embedded path |

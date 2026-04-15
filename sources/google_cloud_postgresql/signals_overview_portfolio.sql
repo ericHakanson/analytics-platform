@@ -23,4 +23,5 @@ select
     from property_renovation_scores
     where is_renovation_candidate = true
       and computed_at >= now() - interval '30 days'
-  ) as candidate_count
+  ) as candidate_count,
+  current_date as built_at

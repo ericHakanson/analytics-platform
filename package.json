@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "npm run sources && evidence build",
+    "build:production": "npm run sources && NODE_ENV=production evidence build",
     "build:strict": "evidence build:strict",
+    "deploy": "npm run build:production && firebase deploy --only hosting",
     "dev": "npm run validate:env && evidence dev --open /",
     "preview": "npm run validate:env && evidence preview",
     "sources": "npm run validate:env && evidence sources",
