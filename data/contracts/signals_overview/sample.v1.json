@@ -1,0 +1,26 @@
+{
+  "contract_name": "signals_overview",
+  "contract_version": "v1",
+  "owner": "fort_island_operator",
+  "refresh_cadence": "weekly",
+  "source_layers": ["event_layer", "derived_commercial_layer"],
+  "grain": "portfolio_time_window",
+  "date_range": { "start_date": "2026-03-15", "end_date": "2026-04-14" },
+  "portfolio": { "slug": "massachusetts", "name": "Massachusetts" },
+  "records": [
+    {
+      "portfolio_slug": "massachusetts",
+      "period_start": "2026-03-15",
+      "period_end": "2026-04-14",
+      "sale_events_30d": 284,
+      "new_sale_events": 231,
+      "late_sale_events": 53,
+      "scored_properties_count": 412,
+      "high_band_candidate_count": 127,
+      "high_band_candidate_rate": 0.3083,
+      "model_version": "v1",
+      "data_as_of": "2026-04-14",
+      "last_updated_at": "2026-04-14T12:00:00Z"
+    }
+  ]
+}

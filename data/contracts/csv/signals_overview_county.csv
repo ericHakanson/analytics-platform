@@ -1,0 +1,15 @@
+contract_name,contract_version,portfolio_slug,state_county_id,fips_code,county,state_code,total_properties,data_as_of,last_updated_at
+signals_overview,v1,massachusetts,MA-Middlesex,25017,Middlesex,MA,1247,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Worcester,25027,Worcester,MA,892,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Norfolk,25021,Norfolk,MA,634,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Suffolk,25025,Suffolk,MA,521,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Essex,25009,Essex,MA,487,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Plymouth,25023,Plymouth,MA,412,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Bristol,25005,Bristol,MA,378,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Hampden,25013,Hampden,MA,298,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Hampshire,25015,Hampshire,MA,187,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Barnstable,25001,Barnstable,MA,156,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Berkshire,25003,Berkshire,MA,134,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Franklin,25011,Franklin,MA,89,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Dukes,25007,Dukes,MA,43,2026-04-14,2026-04-14T12:00:00Z
+signals_overview,v1,massachusetts,MA-Nantucket,25019,Nantucket,MA,28,2026-04-14,2026-04-14T12:00:00Z
