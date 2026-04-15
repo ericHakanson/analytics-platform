@@ -1,0 +1,64 @@
+{
+  "title": "Essex County Geographic Coverage",
+  "slug": "proof/essex-county-ma/geographic-coverage",
+  "route_path": "/proof/essex-county-ma/geographic-coverage",
+  "asset_type": "evergreen_proof",
+  "audience": [
+    "public_website_visitor",
+    "prospect"
+  ],
+  "market": {
+    "slug": "essex-county-ma",
+    "name": "Essex County, MA",
+    "geography_scope": "county",
+    "state_code": "MA"
+  },
+  "date_range": {
+    "label": "Last 30 days",
+    "start_date": "2026-03-15",
+    "end_date": "2026-04-14"
+  },
+  "refresh_cadence": "weekly",
+  "primary_message": "Fort Island tracks properties across 38 of 42 ZIP codes in Essex County, MA — a 90%+ geographic coverage rate that ensures signal intelligence spans the full market.",
+  "why_it_matters": "Prospects need confidence that coverage is broad enough to make the signal commercially meaningful. ZIP-level coverage data shows that Fort Island's property tracking spans nearly the entire county rather than being concentrated in a few high-activity towns.",
+  "supporting_metrics": [
+    {
+      "metric_key": "zip_count_in_region",
+      "label": "ZIP codes in region"
+    },
+    {
+      "metric_key": "zip_count_with_properties",
+      "label": "ZIP codes with properties"
+    }
+  ],
+  "cta": {
+    "label": "Request a market-specific signal briefing",
+    "target_type": "hubspot_form",
+    "target_url": "https://go.fortisland.example/request-briefing",
+    "utm_medium": "proof-page",
+    "utm_campaign": "geographic-coverage"
+  },
+  "channel_suitability": {
+    "website": true,
+    "outbound": true,
+    "social": true,
+    "briefing": true
+  },
+  "status": "draft",
+  "owner": {
+    "name": "Eric Hakanson",
+    "role": "operator"
+  },
+  "freshness": {
+    "last_updated_at": "2026-04-14T12:00:00Z",
+    "data_as_of": "2026-04-14",
+    "refresh_notes": "Refresh after the weekly canonical property layer sync completes.",
+    "source_systems": [
+      "internal_curated"
+    ]
+  },
+  "contract": {
+    "name": "geographic_coverage",
+    "version": "v1"
+  }
+}
