@@ -1,3 +1,8 @@
+---
+title: Fort Island Signals
+hide_title: true
+---
+
 # Signals Overview
 
 Real-time coverage across Massachusetts property listings, sales activity, renovation scoring, and geographic reach. All statistics reflect the **trailing 30 days** and are refreshed each time this page is built.
