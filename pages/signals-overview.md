@@ -23,6 +23,16 @@ select * from google_cloud_postgresql.signals_overview_portfolio
 
 <BigValue data={portfolio_overview} value="candidate_count" title="Renovation Candidates" fmt="num0" />
 
+### Freshness Snapshot
+
+```sql freshness
+select * from google_cloud_postgresql.signals_overview_freshness
+```
+
+<BigValue data={freshness} value="scraped_24h" title="Properties Scraped (24h)" fmt="num0" />
+
+<BigValue data={freshness} value="sales_identified_24h" title="Sales Identified (24h)" fmt="num0" />
+
 ## Geographic Coverage
 
 Active geographies are Massachusetts towns and cities where Fort Island's pipeline observed at least one listing event in the trailing 30 days.
