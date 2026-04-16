@@ -8,9 +8,9 @@
 
 <EvidenceDefaultLayout
   {data}
-  title="Fort Island Analytics Platform"
-  homePageName="Publishing Home"
+  title="Fort Island Signals"
   builtWithEvidence={false}
+  hideSidebar={true}
   maxWidth={1380}
 >
   <slot slot="content" />
