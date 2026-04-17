@@ -5,49 +5,41 @@ hide_title: true
 
 # Signals Overview
 
-Real-time coverage across Massachusetts property listings, sales activity, renovation scoring, and geographic reach. All statistics reflect the **trailing 30 days** and are refreshed each time this page is built.
+Coverage across property listings, sales activity, renovation scoring, and geographic reach. All activity statistics reflect the **trailing 30 days** and are refreshed each time this page is built.
 
-> **Data freshness:** This dashboard is built from live database snapshots. The figures below reflect activity observed through {portfolio_overview[0].built_at}. Scores are computed by Fort Island's v2 renovation model; candidate thresholds are reviewed quarterly.
+> **Data freshness:** Built from live database snapshots on {glance[0].built_at}. Renovation scores use Fort Island's v2 model; candidate thresholds are reviewed quarterly.
 
-## At a Glance
+## Geographic Coverage At a Glance
 
-```sql portfolio_overview
-select * from google_cloud_postgresql.signals_overview_portfolio
+```sql glance
+select * from google_cloud_postgresql.signals_overview_glance
 ```
 
-<BigValue data={portfolio_overview} value="listed_count" title="Properties Listed" fmt="num0" />
+**Portfolio**
 
-<BigValue data={portfolio_overview} value="sold_count" title="Properties Sold" fmt="num0" />
+<BigValue data={glance} value="total_properties" title="Total Properties" fmt="num0" />
 
-<BigValue data={portfolio_overview} value="scored_count" title="Renovation Scores" fmt="num0" />
+<BigValue data={glance} value="states_covered" title="States Covered" fmt="num0" />
 
-<BigValue data={portfolio_overview} value="candidate_count" title="Renovation Candidates" fmt="num0" />
+<BigValue data={glance} value="municipalities_covered" title="Municipalities Covered" fmt="num0" />
 
-### Freshness Snapshot
+**Market Activity — Trailing 30 Days**
 
-```sql freshness
-select * from google_cloud_postgresql.signals_overview_freshness
-```
+<BigValue data={glance} value="for_sale_observed" title="For-Sale Observed" fmt="num0" />
 
-<BigValue data={freshness} value="scraped_24h" title="Properties Scraped (24h)" fmt="num0" />
+<BigValue data={glance} value="new_listings" title="New Listings" fmt="num0" />
 
-<BigValue data={freshness} value="sales_identified_24h" title="Sales Identified (24h)" fmt="num0" />
+<BigValue data={glance} value="sales_detected" title="Sales Detected" fmt="num0" />
 
-## Geographic Coverage
+**Enrichment Pipeline — Trailing 30 Days**
 
-Active geographies are Massachusetts towns and cities where Fort Island's pipeline observed at least one listing event in the trailing 30 days.
+<BigValue data={glance} value="properties_scraped" title="Properties Scraped" fmt="num0" />
 
-```sql coverage_overview
-select * from google_cloud_postgresql.signals_overview_coverage
-```
+<BigValue data={glance} value="properties_scored" title="Properties Scored" fmt="num0" />
 
-<BigValue data={coverage_overview} value="active_geographies" title="Active Geographies" fmt="num0" />
+<BigValue data={glance} value="renovation_candidates" title="Renovation Candidates" fmt="num0" />
 
-<BigValue data={coverage_overview} value="for_sale_observed" title="For-Sale Observed" fmt="num0" />
-
-<BigValue data={coverage_overview} value="new_listings" title="New Listings" fmt="num0" />
-
-<BigValue data={coverage_overview} value="sales_detected" title="Sales Detected" fmt="num0" />
+## Properties by County
 
 ```sql county_map_data
 select * from google_cloud_postgresql.signals_overview_county_map
@@ -69,7 +61,7 @@ select * from google_cloud_postgresql.signals_overview_county_map
 
 ## Renovation Funnel
 
-Properties enter the funnel when observed in a listing feed. Each subsequent stage requires an additional data signal — a recorded sale, a detail snapshot, a computed renovation score, and finally meeting the renovation candidate threshold.
+Properties enter the funnel when first observed in a listing feed. Each subsequent stage requires an additional data signal — a detail snapshot, a computed renovation score, and finally meeting the renovation candidate threshold.
 
 ```sql funnel
 select * from google_cloud_postgresql.signals_overview_funnel
@@ -88,4 +80,4 @@ order by step_order
 
 ---
 
-*Fort Island tracks Massachusetts residential properties using automated listing feeds and public records. Renovation scores are produced by a proprietary model trained on historical renovation outcomes. Candidate designation indicates a property meets minimum score and data-completeness thresholds — it is not a recommendation to buy or sell.*
+*Fort Island tracks residential properties using automated listing feeds and public records. Renovation scores are produced by a proprietary model trained on historical renovation outcomes. Candidate designation indicates a property meets minimum score and data-completeness thresholds — it is not a recommendation to buy or sell.*

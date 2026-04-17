@@ -1,8 +1,7 @@
 with base as (
   select distinct property_id
   from properties
-  where state = 'MA'
-    and created_at >= now() - interval '30 days'
+  where created_at >= now() - interval '30 days'
 ),
 snapshotted as (
   select distinct b.property_id
