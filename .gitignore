@@ -13,3 +13,5 @@ env
 data/legacy/
 codex_start_prompt.md
 .evidence/meta
+.claude/
+.firebase/
