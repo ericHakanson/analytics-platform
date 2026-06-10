@@ -1,0 +1,144 @@
+name: daily-refresh
+
+on:
+  schedule:
+    # Midnight America/New_York. EST = 05:00 UTC, EDT = 04:00 UTC.
+    # Both fire; the guard job lets exactly one proceed (the one at 00:xx ET).
+    - cron: '0 4 * * *'
+    - cron: '0 5 * * *'
+  workflow_dispatch: {}   # manual on-demand refresh (bypasses the ET guard)
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write   # required for Workload Identity Federation
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Manual run — proceeding."; echo "proceed=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          HOUR=$(TZ='America/New_York' date +%H)
+          echo "Current America/New_York hour: $HOUR"
+          if [ "$HOUR" = "00" ]; then echo "proceed=true"  >> "$GITHUB_OUTPUT";
+          else                         echo "proceed=false" >> "$GITHUB_OUTPUT"; fi
+
+  refresh:
+    needs: guard
+    if: needs.guard.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PUBLISHING_DATA_MODE: sample
+      VITE_PUBLISHING_ENV: production
+      EVIDENCE_VAR__contract_root: ./data/contracts/csv
+      VITE_PUBLIC_SITE_BASE_URL: https://signals.fortisland.me
+      VITE_HUBSPOT_FORM_BASE_URL: ${{ vars.VITE_HUBSPOT_FORM_BASE_URL }}
+      VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE: fortisland-signals
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env for validate:env + Vite
+        run: |
+          cat > .env <<EOF
+          PUBLISHING_DATA_MODE=${PUBLISHING_DATA_MODE}
+          VITE_PUBLISHING_ENV=${VITE_PUBLISHING_ENV}
+          EVIDENCE_VAR__contract_root=${EVIDENCE_VAR__contract_root}
+          VITE_PUBLIC_SITE_BASE_URL=${VITE_PUBLIC_SITE_BASE_URL}
+          VITE_HUBSPOT_FORM_BASE_URL=${VITE_HUBSPOT_FORM_BASE_URL}
+          VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE=${VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE}
+          EOF
+
+      - name: Write Cloud SQL connection options (proxy)
+        run: |
+          printf '%s' "${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}" \
+            > sources/google_cloud_postgresql/connection.options.yaml
+
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Start Cloud SQL Auth Proxy
+        run: |
+          curl -sSf -o cloud-sql-proxy \
+            https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.1/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          ./cloud-sql-proxy --port 5432 "${{ vars.CLOUDSQL_INSTANCE_CONNECTION_NAME }}" &
+          echo "Waiting for proxy on 127.0.0.1:5432..."
+          for i in $(seq 1 30); do
+            (exec 3<>/dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && { echo "proxy up"; break; }
+            sleep 1
+          done
+
+      - name: Generate Evidence sources (queries Cloud SQL via proxy)
+        run: npm run sources
+
+      - name: Re-apply dark/light favicon patch to app.html
+        run: |
+          APP_HTML=.evidence/template/src/app.html
+          if [ -f "$APP_HTML" ]; then
+            perl -0pi -e 's{<link rel="icon" href="%sveltekit\.assets%/favicon\.ico" sizes="32x32" />\s*\n\s*<link rel="icon" href="%sveltekit\.assets%/icon\.svg" type="image/svg\+xml" />}{<link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" media="(prefers-color-scheme: light)" />\n    <link rel="icon" href="%sveltekit.assets%/favicon-dark.ico" sizes="32x32" media="(prefers-color-scheme: dark)" />}g' "$APP_HTML"
+            echo "Patched $APP_HTML"
+          else
+            echo "WARNING: $APP_HTML not found — favicon patch skipped"; fi
+
+      - name: Evidence production build
+        run: NODE_ENV=production npx evidence build
+
+      - name: Deploy to Firebase Hosting
+        run: npx firebase-tools@13 deploy --only hosting --project fort-island-signals --non-interactive
+
+      # ---------- failure alerting ----------
+      - name: Create Linear issue on failure
+        if: failure()
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl -sS https://api.linear.app/graphql \
+            -H "Content-Type: application/json" \
+            -H "Authorization: ${LINEAR_API_KEY}" \
+            -d "$(jq -n --arg url "$RUN_URL" --arg run "$GITHUB_RUN_NUMBER" '{
+              query: "mutation($input: IssueCreateInput!){ issueCreate(input:$input){ success issue{ identifier url } } }",
+              variables: { input: {
+                teamId: "72d8f11b-f69e-4cac-b892-ba45c3e9bae0",
+                projectId: "aab45999-e3c7-40f8-8049-ddbf7520f563",
+                priority: 2,
+                title: ("Daily dashboard refresh failed (run #" + $run + ")"),
+                description: ("The scheduled `daily-refresh` workflow failed.\n\nRun: " + $url + "\n\nCheck the Cloud SQL Auth Proxy, build, or Firebase deploy step logs.")
+              }}}')"
+
+      - name: Email on failure (optional SMTP)
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "❌ Fort Island Signals daily refresh failed (run #${{ github.run_number }})"
+          to: eric@fortisland.me
+          from: Fort Island CI <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            The scheduled daily-refresh workflow failed.
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
