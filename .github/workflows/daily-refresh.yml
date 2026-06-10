@@ -82,7 +82,8 @@ jobs:
           curl -sSf -o cloud-sql-proxy \
             https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.1/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
-          ./cloud-sql-proxy --port 5432 "${{ vars.CLOUDSQL_INSTANCE_CONNECTION_NAME }}" &
+          ./cloud-sql-proxy --port 5432 --quota-project recently-sold-real-estate \
+            "${{ vars.CLOUDSQL_INSTANCE_CONNECTION_NAME }}" &
           echo "Waiting for proxy on 127.0.0.1:5432..."
           for i in $(seq 1 30); do
             (exec 3<>/dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && { echo "proxy up"; break; }
