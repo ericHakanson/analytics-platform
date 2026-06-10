@@ -2,11 +2,14 @@ name: daily-refresh
 
 on:
   schedule:
-    # Midnight America/New_York. EST = 05:00 UTC, EDT = 04:00 UTC.
-    # Both fire; the guard job lets exactly one proceed (the one at 00:xx ET).
-    - cron: '0 4 * * *'
-    - cron: '0 5 * * *'
-  workflow_dispatch: {}   # manual on-demand refresh (bypasses the ET guard)
+    # Target: midnight America/New_York. EST = 05:23 UTC, EDT = 04:23 UTC.
+    # Off-peak minute (GitHub delays top-of-the-hour crons the most). Both fire;
+    # the guard lets the FIRST one that actually executes deploy and dedupes the
+    # second — delay-tolerant, unlike an exact-hour check (2026-06-10 incident:
+    # both crons started 4h late and an hour-equality guard skipped the deploy).
+    - cron: '23 4 * * *'
+    - cron: '23 5 * * *'
+  workflow_dispatch: {}   # manual on-demand refresh (bypasses the guard)
 
 concurrency:
   group: daily-refresh
@@ -15,6 +18,7 @@ concurrency:
 permissions:
   contents: read
   id-token: write   # required for Workload Identity Federation
+  actions: read     # guard queries this workflow's own run history
 
 jobs:
   guard:
@@ -23,14 +27,32 @@ jobs:
       proceed: ${{ steps.check.outputs.proceed }}
     steps:
       - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "Manual run — proceeding."; echo "proceed=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          HOUR=$(TZ='America/New_York' date +%H)
-          echo "Current America/New_York hour: $HOUR"
-          if [ "$HOUR" = "00" ]; then echo "proceed=true"  >> "$GITHUB_OUTPUT";
-          else                         echo "proceed=false" >> "$GITHUB_OUTPUT"; fi
+          # Dedup: skip only if another scheduled run already DEPLOYED (refresh
+          # job succeeded) in the last 20 hours. A guard-skipped run concludes
+          # "success" too, so we must check the refresh job, not the run.
+          CUTOFF=$(date -u -d '-20 hours' +%Y-%m-%dT%H:%M:%SZ)
+          DEPLOYED=false
+          for RID in $(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/daily-refresh.yml/runs?event=schedule&created=>=${CUTOFF}&per_page=10" --jq '.workflow_runs[].id'); do
+            [ "$RID" = "${GITHUB_RUN_ID}" ] && continue
+            CONCLUSION=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RID}/jobs" --jq '.jobs[] | select(.name=="refresh") | .conclusion')
+            if [ "$CONCLUSION" = "success" ]; then
+              DEPLOYED=true
+              echo "Scheduled run ${RID} already deployed within the last 20h — skipping."
+              break
+            fi
+          done
+          if [ "$DEPLOYED" = "true" ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No scheduled deploy in the last 20h — proceeding."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
 
   refresh:
     needs: guard
