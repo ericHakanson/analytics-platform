@@ -95,12 +95,22 @@ jobs:
 
       - name: Re-apply dark/light favicon patch to app.html
         run: |
-          APP_HTML=.evidence/template/src/app.html
-          if [ -f "$APP_HTML" ]; then
-            perl -0pi -e 's{<link rel="icon" href="%sveltekit\.assets%/favicon\.ico" sizes="32x32" />\s*\n\s*<link rel="icon" href="%sveltekit\.assets%/icon\.svg" type="image/svg\+xml" />}{<link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" media="(prefers-color-scheme: light)" />\n    <link rel="icon" href="%sveltekit.assets%/favicon-dark.ico" sizes="32x32" media="(prefers-color-scheme: dark)" />}g' "$APP_HTML"
-            echo "Patched $APP_HTML"
-          else
-            echo "WARNING: $APP_HTML not found — favicon patch skipped"; fi
+          # The build template lives in node_modules on a fresh checkout;
+          # .evidence/template only exists on dev machines (kept as fallback).
+          PATCHED=0
+          for APP_HTML in \
+            node_modules/@evidence-dev/evidence/template/src/app.html \
+            .evidence/template/src/app.html
+          do
+            if [ -f "$APP_HTML" ]; then
+              perl -0pi -e 's{<link rel="icon" href="%sveltekit\.assets%/favicon\.ico" sizes="32x32" />\s*\n\s*<link rel="icon" href="%sveltekit\.assets%/icon\.svg" type="image/svg\+xml" />}{<link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" media="(prefers-color-scheme: light)" />\n    <link rel="icon" href="%sveltekit.assets%/favicon-dark.ico" sizes="32x32" media="(prefers-color-scheme: dark)" />}g' "$APP_HTML"
+              echo "Patched $APP_HTML"
+              PATCHED=1
+            fi
+          done
+          if [ "$PATCHED" = "0" ]; then
+            echo "WARNING: no app.html found — favicon patch skipped"
+          fi
 
       - name: Evidence production build
         run: NODE_ENV=production npx evidence build
@@ -115,7 +125,7 @@ jobs:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
         run: |
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          curl -sS https://api.linear.app/graphql \
+          RESPONSE=$(curl -sS https://api.linear.app/graphql \
             -H "Content-Type: application/json" \
             -H "Authorization: ${LINEAR_API_KEY}" \
             -d "$(jq -n --arg url "$RUN_URL" --arg run "$GITHUB_RUN_NUMBER" '{
@@ -126,20 +136,15 @@ jobs:
                 priority: 2,
                 title: ("Daily dashboard refresh failed (run #" + $run + ")"),
                 description: ("The scheduled `daily-refresh` workflow failed.\n\nRun: " + $url + "\n\nCheck the Cloud SQL Auth Proxy, build, or Firebase deploy step logs.")
-              }}}')"
+              }}}')")
+          if echo "$RESPONSE" | jq -e '.data.issueCreate.success == true' >/dev/null; then
+            echo "Linear issue filed: $(echo "$RESPONSE" | jq -r '.data.issueCreate.issue.identifier + " " + .data.issueCreate.issue.url')"
+          else
+            echo "ERROR: Linear issue creation failed:"
+            echo "$RESPONSE" | jq '.errors // .'
+            exit 1
+          fi
 
-      - name: Email on failure (optional SMTP)
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "❌ Fort Island Signals daily refresh failed (run #${{ github.run_number }})"
-          to: eric@fortisland.me
-          from: Fort Island CI <${{ secrets.MAIL_USERNAME }}>
-          body: |
-            The scheduled daily-refresh workflow failed.
-            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # Failure email: GitHub's native notification (Settings → Notifications →
+      # Actions → "Failed workflows only") delivers to eric@fortisland.me.
+      # Explicit SMTP step removed by decision 2026-06-09 (FOR-543).
