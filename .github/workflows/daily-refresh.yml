@@ -47,14 +47,14 @@ jobs:
             CONCLUSION=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RID}/jobs" --jq '.jobs[] | select(.name=="refresh") | .conclusion')
             if [ "$CONCLUSION" = "success" ]; then
               DEPLOYED=true
-              echo "Scheduled run ${RID} already deployed within the last 20h — skipping."
+              echo "Scheduled run ${RID} already deployed within the last 6h — skipping."
               break
             fi
           done
           if [ "$DEPLOYED" = "true" ]; then
             echo "proceed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "No scheduled deploy in the last 20h — proceeding."
+            echo "No scheduled deploy in the last 6h — proceeding."
             echo "proceed=true" >> "$GITHUB_OUTPUT"
           fi
 
