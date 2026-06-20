@@ -12,11 +12,12 @@
     "dev": "npm run validate:env && evidence dev --open /",
     "preview": "npm run validate:env && evidence preview",
     "sources": "npm run validate:env && evidence sources",
-    "sources:strict": "evidence sources --strict",
+    "sources:strict": "npm run validate:env && evidence sources --strict",
     "test": "evidence build",
     "validate:env": "node scripts/validate-environment.mjs",
     "validate:metadata": "node scripts/validate-asset-metadata.mjs",
-    "validate:contracts": "node scripts/validate-publishing-contracts.mjs"
+    "validate:contracts": "node scripts/validate-publishing-contracts.mjs",
+    "validate:refresh": "node scripts/validate-refresh-failfast.mjs"
   },
   "engines": {
     "node": ">=18.0.0",
