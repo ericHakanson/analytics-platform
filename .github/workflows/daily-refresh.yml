@@ -93,9 +93,26 @@ jobs:
           EOF
 
       - name: Write Cloud SQL connection options (proxy)
+        env:
+          EVIDENCE_CONNECTION_OPTIONS_YAML: ${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}
         run: |
-          printf '%s' "${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}" \
-            > sources/google_cloud_postgresql/connection.options.yaml
+          CONN_FILE=sources/google_cloud_postgresql/connection.options.yaml
+          printf '%s' "$EVIDENCE_CONNECTION_OPTIONS_YAML" > "$CONN_FILE"
+          # FOR-591 fail-fast: bound EVERY source query with a server-side
+          # statement_timeout so a runaway/hanging query (or a slow lock wait)
+          # fails in seconds instead of hanging `evidence sources` to the job's
+          # 20-min timeout-minutes (which would conclude `cancelled`, not
+          # `failed`, and silently skip the alert step below). The pg `options`
+          # field is passed straight to libpq as extra `-c key=value` flags.
+          #
+          # The bound must ALWAYS apply. A naive "only add `options:` when
+          # absent" guard is bypassed whenever the secret already carries an
+          # `options:` key for ANY unrelated setting (e.g. application_name) —
+          # the timeout would silently never be set. So we MERGE the timeout
+          # into whatever `options` value exists (parsing the YAML), append
+          # idempotently if already present, and FAIL CLOSED if the file isn't
+          # the expected flat mapping (better to fail the run than run unbounded).
+          node scripts/merge-statement-timeout.mjs "$CONN_FILE" 15000
 
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
@@ -117,7 +134,13 @@ jobs:
           done
 
       - name: Generate Evidence sources (queries Cloud SQL via proxy)
-        run: npm run sources
+        # FOR-591 fail-fast: `--strict` makes `evidence sources` exit non-zero
+        # on any source-query error instead of swallowing it and continuing
+        # with a stale/empty manifest (the FOR-589 `permission denied for table
+        # properties` signature, which previously hung to the job timeout).
+        # Combined with statement_timeout above, a broken source now fails this
+        # step in seconds, so the run concludes `failure` and alerts.
+        run: npm run sources:strict
 
       - name: Re-apply dark/light favicon patch to app.html
         run: |
@@ -146,29 +169,42 @@ jobs:
 
       # ---------- failure alerting ----------
       - name: Create Linear issue on failure
-        if: failure()
+        # FOR-591: alert on `cancelled()` too, not just `failure()`. A
+        # `timeout-minutes` kill concludes the job as `cancelled` (NOT
+        # `failed`), so a `failure()`-only gate silently skipped the alert when
+        # a source query hung (FOR-589: the dashboard stopped updating for ~2
+        # days with zero alerts). The fail-fast changes above make a hang exit
+        # as `failure` in seconds; this `cancelled()` clause is the belt-and-
+        # suspenders so even a genuine job-level cancel still notifies.
+        if: cancelled() || failure()
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          RUN_RESULT: ${{ job.status }}
         run: |
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # job.status is "cancelled" for a timeout-kill, "failure" otherwise.
+          RESULT="${RUN_RESULT:-failure}"
           RESPONSE=$(curl -sS https://api.linear.app/graphql \
             -H "Content-Type: application/json" \
             -H "Authorization: ${LINEAR_API_KEY}" \
-            -d "$(jq -n --arg url "$RUN_URL" --arg run "$GITHUB_RUN_NUMBER" '{
+            -d "$(jq -n --arg url "$RUN_URL" --arg run "$GITHUB_RUN_NUMBER" --arg result "$RESULT" '{
               query: "mutation($input: IssueCreateInput!){ issueCreate(input:$input){ success issue{ identifier url } } }",
               variables: { input: {
                 teamId: "72d8f11b-f69e-4cac-b892-ba45c3e9bae0",
                 projectId: "aab45999-e3c7-40f8-8049-ddbf7520f563",
                 priority: 2,
-                title: ("Daily dashboard refresh failed (run #" + $run + ")"),
-                description: ("The scheduled `daily-refresh` workflow failed.\n\nRun: " + $url + "\n\nCheck the Cloud SQL Auth Proxy, build, or Firebase deploy step logs.")
+                title: ("Daily dashboard refresh " + $result + " (run #" + $run + ")"),
+                description: ("The scheduled `daily-refresh` workflow ended `" + $result + "`.\n\nRun: " + $url + "\n\nA `cancelled` result usually means the job hit its `timeout-minutes` (e.g. a hung source query) — check the `Generate Evidence sources` step first, then the Cloud SQL Auth Proxy, build, or Firebase deploy step logs.")
               }}}')")
           if echo "$RESPONSE" | jq -e '.data.issueCreate.success == true' >/dev/null; then
             echo "Linear issue filed: $(echo "$RESPONSE" | jq -r '.data.issueCreate.issue.identifier + " " + .data.issueCreate.issue.url')"
           else
-            echo "ERROR: Linear issue creation failed:"
-            echo "$RESPONSE" | jq '.errors // .'
-            exit 1
+            # Best-effort: a Linear/telemetry failure must not mask the original
+            # build failure. GitHub's native "failed workflows" email still
+            # delivers to eric@fortisland.me as the durable backstop. Log and
+            # move on rather than exit 1 (which would itself read as the cause).
+            echo "WARNING: Linear issue creation failed (best-effort alert; native email still fires):"
+            echo "$RESPONSE" | jq '.errors // .' || echo "$RESPONSE"
           fi
 
       # Failure email: GitHub's native notification (Settings → Notifications →
