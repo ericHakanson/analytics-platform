@@ -93,19 +93,26 @@ jobs:
           EOF
 
       - name: Write Cloud SQL connection options (proxy)
+        env:
+          EVIDENCE_CONNECTION_OPTIONS_YAML: ${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}
         run: |
           CONN_FILE=sources/google_cloud_postgresql/connection.options.yaml
-          printf '%s' "${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}" > "$CONN_FILE"
-          # FOR-591 fail-fast: bound every source query with a server-side
+          printf '%s' "$EVIDENCE_CONNECTION_OPTIONS_YAML" > "$CONN_FILE"
+          # FOR-591 fail-fast: bound EVERY source query with a server-side
           # statement_timeout so a runaway/hanging query (or a slow lock wait)
           # fails in seconds instead of hanging `evidence sources` to the job's
           # 20-min timeout-minutes (which would conclude `cancelled`, not
           # `failed`, and silently skip the alert step below). The pg `options`
-          # field is passed straight to libpq (-c key=value). Idempotent: only
-          # append if the secret didn't already carry an `options:` line.
-          if ! grep -qE '^options:' "$CONN_FILE"; then
-            printf '\noptions: %s\n' "'-c statement_timeout=15000'" >> "$CONN_FILE"
-          fi
+          # field is passed straight to libpq as extra `-c key=value` flags.
+          #
+          # The bound must ALWAYS apply. A naive "only add `options:` when
+          # absent" guard is bypassed whenever the secret already carries an
+          # `options:` key for ANY unrelated setting (e.g. application_name) —
+          # the timeout would silently never be set. So we MERGE the timeout
+          # into whatever `options` value exists (parsing the YAML), append
+          # idempotently if already present, and FAIL CLOSED if the file isn't
+          # the expected flat mapping (better to fail the run than run unbounded).
+          node scripts/merge-statement-timeout.mjs "$CONN_FILE" 15000
 
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2

@@ -1,0 +1,35 @@
+name: ci
+
+# FOR-591: a real, required check on PRs to main. Without this, the
+# `validate:refresh` guard (scripts/validate-refresh-failfast.mjs) only ran
+# locally and could not stop a regression of the daily-refresh fail-fast
+# invariants (strict sources, bounded statement_timeout, cancelled()||failure()
+# alert gate). This wires it into CI so a regression fails the PR.
+
+on:
+  pull_request:
+    branches:
+      - main
+  # Allow manual re-runs / branch validation off the Actions tab.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  validate-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate daily-refresh fail-fast invariants
+        run: npm run validate:refresh

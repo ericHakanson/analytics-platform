@@ -18,7 +18,11 @@ import path from 'node:path';
  *   1. The sources step uses `sources:strict` so a source-query error exits
  *      the step non-zero (does not swallow + continue with a stale manifest).
  *   2. The written connection options carry a bounded `statement_timeout` so a
- *      runaway/hanging query fails in seconds, not at the job timeout.
+ *      runaway/hanging query fails in seconds, not at the job timeout. The
+ *      workflow delegates this to `scripts/merge-statement-timeout.mjs`, which
+ *      MERGES the bound into any pre-existing `options` value (a plain
+ *      "add `options:` only when absent" guard is bypassed whenever the secret
+ *      already carries an unrelated `options:` key) and fails closed otherwise.
  *   3. The Linear alert step fires on `cancelled()` too — so even a genuine
  *      job-level timeout-kill (which concludes `cancelled`) still notifies.
  */
@@ -58,12 +62,66 @@ function main() {
   }
 
   // 2. Bounded statement_timeout written into the connection options.
-  if (!/statement_timeout=\d+/.test(workflow)) {
+  //
+  // The bound must ALWAYS apply, even when the secret already carries an
+  // `options:` key for an unrelated setting. The workflow delegates this to
+  // `scripts/merge-statement-timeout.mjs`, which MERGES `-c statement_timeout`
+  // into whatever `options` value exists and fails closed otherwise. Assert:
+  //   (a) the workflow invokes the merge script with a positive timeout, and
+  //   (b) the merge script exists and contains the merge + fail-closed logic.
+  // (The old check looked for a literal `statement_timeout=15000` in the YAML;
+  // that no longer holds now that the value is computed by the merge script, so
+  // we verify the script that guarantees the bound instead.)
+  const mergeInvocation = workflow.match(
+    /node\s+scripts\/merge-statement-timeout\.mjs\s+"\$CONN_FILE"\s+(\d+)/
+  );
+  if (!mergeInvocation) {
     fail(
-      'connection options must set a bounded `statement_timeout` (libpq `-c statement_timeout=<ms>`) ' +
-        'so a runaway/hanging source query fails in seconds rather than running to the job timeout.',
+      'the connection-write step must invoke `node scripts/merge-statement-timeout.mjs "$CONN_FILE" <ms>` ' +
+        'so the bound is MERGED into any existing `options` value (a plain "add options: only when absent" ' +
+        'guard is bypassed whenever the secret already carries an unrelated `options:` key).',
       errors
     );
+  } else if (!(Number.parseInt(mergeInvocation[1], 10) > 0)) {
+    fail(
+      `merge-statement-timeout is invoked with a non-positive timeout (${mergeInvocation[1]}); ` +
+        'pass a positive millisecond bound (e.g. 15000).',
+      errors
+    );
+  }
+
+  const mergeScriptPath = path.join(repoRoot, 'scripts', 'merge-statement-timeout.mjs');
+  if (!existsSync(mergeScriptPath)) {
+    fail(
+      'scripts/merge-statement-timeout.mjs is missing — it is what guarantees the statement_timeout bound ' +
+        'is merged into the written connection options.',
+      errors
+    );
+  } else {
+    const mergeScript = readFileSync(mergeScriptPath, 'utf8');
+    // The script must actually emit a libpq statement_timeout flag...
+    if (!/statement_timeout=/.test(mergeScript)) {
+      fail(
+        'scripts/merge-statement-timeout.mjs must build a `-c statement_timeout=<ms>` libpq flag.',
+        errors
+      );
+    }
+    // ...append to (merge with) an existing options value rather than only set-when-absent...
+    if (!/existing/.test(mergeScript) || !/timeoutFlag/.test(mergeScript)) {
+      fail(
+        'scripts/merge-statement-timeout.mjs must MERGE the timeout into any existing `options` value ' +
+          '(not just set it when absent).',
+        errors
+      );
+    }
+    // ...and fail closed (process.exit(1) / die) on an unexpected format.
+    if (!/process\.exit\(1\)/.test(mergeScript)) {
+      fail(
+        'scripts/merge-statement-timeout.mjs must fail closed (exit non-zero) on an unexpected connection ' +
+          'format rather than silently running with an unbounded connection.',
+        errors
+      );
+    }
   }
 
   // 3. Alert on cancelled() too, so a timeout-kill (concludes `cancelled`) still notifies.
