@@ -17,7 +17,8 @@
     "validate:env": "node scripts/validate-environment.mjs",
     "validate:metadata": "node scripts/validate-asset-metadata.mjs",
     "validate:contracts": "node scripts/validate-publishing-contracts.mjs",
-    "validate:refresh": "node scripts/validate-refresh-failfast.mjs"
+    "validate:refresh": "node scripts/validate-refresh-failfast.mjs",
+    "test:merge-timeout": "node scripts/test-merge-statement-timeout.mjs"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -28,7 +29,8 @@
     "@evidence-dev/csv": "^1.0.16",
     "@evidence-dev/duckdb": "^2.0.1",
     "@evidence-dev/evidence": "^40.1.8",
-    "@evidence-dev/postgres": "^1.0.10"
+    "@evidence-dev/postgres": "^1.0.10",
+    "yaml": "^2.8.2"
   },
   "overrides": {
     "axios": "^1.7.4",

@@ -33,3 +33,11 @@ jobs:
 
       - name: Validate daily-refresh fail-fast invariants
         run: npm run validate:refresh
+
+      # Executable tests for the statement_timeout merge script. The static
+      # validator above checks the merge code exists, but cannot catch a
+      # regression where an existing `statement_timeout=0` (disabled) or an
+      # excessive value is accepted as-is (Codex round-2 P2.1). These run the
+      # script against fixtures and assert the EFFECTIVE bound.
+      - name: Test statement_timeout enforcement
+        run: npm run test:merge-timeout
