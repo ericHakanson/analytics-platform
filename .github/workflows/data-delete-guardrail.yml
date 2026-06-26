@@ -1,0 +1,288 @@
+name: data-delete-guardrail
+
+# Guardrail E — CI tripwire for destructive SQL / dangerous commands.
+# Linear FOR-517 (epic FOR-512), hardened in FOR-634. Policy: DATA_PROTECTION.md.
+#
+# A PR that adds DELETE/TRUNCATE/DROP/destructive-ALTER SQL or dangerous shell
+# (rm -rf, gcloud ... delete, gsutil/bq rm, dropdb, history rewrites) FAILS this
+# check unless the PR carries an authenticated GitHub *review* approval:
+#   an APPROVED review from an allowlisted login (see DATA_DELETE_TRUSTED_APPROVERS)
+#   whose commit_id equals the PR head SHA. GitHub forbids self-approval, the
+#   login is authenticated, and the head-SHA binding means a later push that adds
+#   a destructive op invalidates any prior approval (FOR-634). A LATER
+#   CHANGES_REQUESTED/DISMISSED by an allowlisted login revokes a prior APPROVED.
+#
+# The old free-text `DATA-DELETE-APPROVED: <human> <reason>` trailer is GONE — a
+# PR author could type it themselves and self-approve. The per-line
+# `data-delete-allow` token remains ONLY for genuine non-data false positives
+# (a keyword in a comment/fixture), never for real DDL/DML.
+#
+# Human review is independently enforced by branch protection.
+#
+# ───────────────────────────────────────────────────────────────────────────
+# SECURITY MODEL (FOR-634 P1.3 — pwn-request hardening)
+# ───────────────────────────────────────────────────────────────────────────
+# scan-diff runs on `pull_request_target`, so the workflow DEFINITION, the
+# GITHUB_TOKEN, and `vars.*` all come from the BASE/default branch (trusted),
+# NOT from the PR head. We checkout the BASE ref and run ONLY base-branch code
+# (this workflow + scripts/guardrails/*). The PR head is treated as untrusted
+# DATA: we fetch its SHA and `git diff base...head` to get text to scan. We NEVER
+# checkout the head into the workspace, never run head's Python, never pip-install
+# from head. Trusted base code vs. untrusted diff data — any head-code execution
+# would reintroduce the hole, so there is intentionally no head checkout here.
+#
+# The approver allowlist lives in protected repo config (a repository Actions
+# variable, settable only by repo admins), not in the PR-editable workflow body:
+#   OPERATOR STEP: set Settings → Secrets and variables → Actions → Variables →
+#   `DATA_DELETE_TRUSTED_APPROVERS` to a comma-separated list of GitHub logins
+#   (e.g. "ericHakanson,secondReviewer"). If unset, we fall back to the trusted
+#   in-file default below (safe now that this runs from the base branch).
+# Defense-in-depth: CODEOWNERS makes this workflow + scripts/guardrails/** owned
+# by @ericHakanson; that only ENFORCES once branch protection's "Require review
+# from Code Owners" is enabled (OPERATOR STEP).
+#
+# ───────────────────────────────────────────────────────────────────────────
+# REQUIRED-CHECK BINDING (FOR-634 round-2 P1.1)
+# ───────────────────────────────────────────────────────────────────────────
+# pull_request_target attaches this job's implicit check-run to the BASE-branch
+# SHA, but branch protection requires a context to pass on the PR HEAD SHA. So
+# the implicit check-run can never satisfy the gate. Instead, the final step
+# explicitly POSTs a commit STATUS (context = STATUS_CONTEXT, below) to the PR
+# HEAD SHA via the API, with state success|failure. Re-posted on every
+# push (synchronize/opened/reopened) and on every review event, so a clean PR
+# with no review still gets a status on its head SHA.
+#   OPERATOR STEP: branch protection on the default branch → Require status
+#   checks → require the "data-delete-guardrail" context (NOT the "scan-diff"
+#   job check-run, which is bound to the base SHA and irrelevant).
+
+on:
+  # Untrusted-diff scan: pull_request_target so token+config come from base.
+  # We enumerate types so the verdict is (re-)posted to the NEW head SHA on every
+  # push (synchronize) and on (re)open — see the "Publish verdict" step (P1.1).
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  # Re-run when a review is submitted/edited/dismissed so a fresh Approve flips
+  # the published status green — and a later Request-changes flips it back.
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  # Operator manual re-run: requires a PR number; base/head are resolved via the
+  # API (P2.3). A dispatch with no pr_number is a no-op (the resolve step errors).
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to (re)scan (required for a useful manual run)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  # P1.1: publish the verdict as a commit status on the PR HEAD SHA. Branch
+  # protection must require that status context (not this job's implicit
+  # check-run, which pull_request_target binds to the BASE SHA).
+  statuses: write
+
+env:
+  # Trusted in-file FALLBACK allowlist, used only when the protected repo
+  # variable `vars.DATA_DELETE_TRUSTED_APPROVERS` is empty/unset. Safe to keep
+  # in-file now that the workflow runs from the base branch (a PR head cannot
+  # change what executes). Prefer the repo variable for ops without code review.
+  TRUSTED_APPROVERS_FALLBACK: "ericHakanson"
+  # P1.1: stable commit-status context published on the PR head SHA. THIS is the
+  # context branch protection must require (Settings → Branches → Require status
+  # checks → add "data-delete-guardrail"). The job's own implicit check-run is
+  # bound to the BASE SHA under pull_request_target and is irrelevant to the gate.
+  STATUS_CONTEXT: "data-delete-guardrail"
+
+jobs:
+  selftest:
+    # Always-on sanity check: proves the scanner + the review-eval logic work on
+    # the BASE-branch source. Runs base code only (checkout default ref).
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout@v4.3.1 — default ref. On pull_request_target this is the
+      # BASE branch (trusted), never PR-head code.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      # actions/setup-python@v5.6.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.x"
+      - name: Scanner + review-eval self-test
+        run: python3 scripts/guardrails/check_destructive_sql.py --selftest
+
+  scan-diff:
+    # The real gate: scan the PR's added lines for destructive operations, and
+    # require an authenticated trusted-review approval to clear them.
+    #
+    # pull_request_target (not pull_request): workflow body + token + vars come
+    # from the BASE branch. We only execute base code; the PR head is data.
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      github.event_name == 'pull_request_review' ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      # ── 1) Resolve PR number / base SHA / head SHA from whichever event fired.
+      #    pull_request_target and pull_request_review carry
+      #    github.event.pull_request, so the same expressions work for both. A
+      #    workflow_dispatch has NO pull_request payload (P2.3): we take the
+      #    operator-supplied pr_number input and resolve base/head via the API.
+      - name: Resolve PR coordinates
+        id: pr
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # P2.3: no pull_request payload on dispatch — resolve from the input.
+            if [ -z "${DISPATCH_PR_NUMBER:-}" ]; then
+              echo "workflow_dispatch requires the 'pr_number' input." >&2
+              exit 1
+            fi
+            PR_NUMBER="$DISPATCH_PR_NUMBER"
+            # Resolve base/head SHA + base ref from the PR via the API.
+            read -r BASE_SHA HEAD_SHA BASE_REF < <(
+              gh api "repos/$REPO/pulls/$PR_NUMBER" \
+                --jq '[.base.sha, .head.sha, .base.ref] | @tsv'
+            )
+          fi
+          if [ -z "${PR_NUMBER:-}" ]; then
+            echo "No pull_request payload / pr_number on this event; nothing to scan." >&2
+            exit 1
+          fi
+          {
+            echo "pr_number=$PR_NUMBER"
+            echo "base_sha=$BASE_SHA"
+            echo "head_sha=$HEAD_SHA"
+            echo "base_ref=$BASE_REF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── 2) Checkout the BASE ref ONLY. This is the trusted code we execute
+      #    (this workflow already loaded from base; the scanner comes from here).
+      #    We deliberately do NOT checkout the PR head — head is untrusted.
+      # actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ steps.pr.outputs.base_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # actions/setup-python@v5.6.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.x"
+
+      # ── 3) Fetch the PR head as DATA only (no checkout, no execution), then
+      #    compute the diff text to scan. `git fetch` of a SHA brings the objects
+      #    into .git without ever putting head code in the working tree.
+      - name: Fetch PR head as data and compute diff
+        id: diff
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          BASE_SHA: ${{ steps.pr.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$HEAD_SHA"
+          # three-dot: changes on head since the merge-base with base.
+          git diff --unified=0 "${BASE_SHA}...${HEAD_SHA}" > /tmp/pr.diff
+          echo "Diff bytes: $(wc -c < /tmp/pr.diff)"
+
+      # ── 4) Evaluate the authenticated trusted-review gate using BASE code.
+      #    Allowlist comes from the protected repo variable (admin-only),
+      #    falling back to the trusted in-file default. We fetch ALL reviews
+      #    (paginated), reduce to each reviewer's latest, and let the BASE-branch
+      #    Python decide (logic is unit-tested in --selftest, FOR-634 P1.2).
+      - name: Evaluate authenticated trusted-review approval
+        id: review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          # Protected repo variable (admin-set) wins; trusted in-file fallback.
+          APPROVERS: ${{ vars.DATA_DELETE_TRUSTED_APPROVERS != '' && vars.DATA_DELETE_TRUSTED_APPROVERS || env.TRUSTED_APPROVERS_FALLBACK }}
+        run: |
+          set -euo pipefail
+          # Pull EVERY review on the PR (paginated): login, state, commit_id,
+          # submitted_at — as TSV. The base-branch script reduces to latest-per-
+          # reviewer and applies the head-SHA + allowlist rules.
+          gh api --paginate \
+            "repos/$REPO/pulls/$PR_NUMBER/reviews" \
+            --jq '.[] | [(.user.login // ""), .state, (.commit_id // ""), (.submitted_at // "")] | @tsv' \
+            > /tmp/reviews.tsv || true
+          approved="$(python3 scripts/guardrails/check_destructive_sql.py \
+            --eval-reviews /tmp/reviews.tsv \
+            --head "$HEAD_SHA" \
+            --approvers "$APPROVERS")"
+          echo "approved=$approved" >> "$GITHUB_OUTPUT"
+          if [ "$approved" = "true" ]; then
+            echo "Trusted APPROVED review bound to head SHA $HEAD_SHA."
+          else
+            echo "No trusted APPROVED review bound to head SHA $HEAD_SHA (yet)."
+          fi
+
+      # ── 5) Scan the diff DATA with BASE code, gated by the review boolean.
+      #    Capture the verdict (don't fail the step yet) so step 6 can publish a
+      #    status to the HEAD SHA regardless of pass/fail.
+      - name: Scan PR diff for destructive operations
+        id: scan
+        env:
+          APPROVED: ${{ steps.review.outputs.approved }}
+        run: |
+          set -uo pipefail
+          if python3 scripts/guardrails/check_destructive_sql.py \
+               --diff-file /tmp/pr.diff \
+               --approved-by-trusted-review "$APPROVED"; then
+            verdict=success
+            desc="No destructive ops, or an allowlisted human approved this head SHA."
+          else
+            rc=$?
+            verdict=failure
+            if [ "$rc" = "2" ]; then
+              desc="Destructive op(s) without a trusted APPROVED review on this head SHA."
+            else
+              desc="Guardrail scan errored (exit $rc)."
+            fi
+          fi
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+          echo "description=$desc" >> "$GITHUB_OUTPUT"
+
+      # ── 6) Publish the verdict as a commit STATUS on the PR HEAD SHA (P1.1).
+      #    pull_request_target binds this job's implicit check-run to the BASE
+      #    SHA, which branch protection cannot use. The status we POST here (a
+      #    stable context on the HEAD SHA) is what branch protection must require.
+      #    Re-posted on every push + review event, so a clean PR with no review
+      #    still gets a status on its head. `if: always()` so a failed scan still
+      #    publishes the failure status.
+      - name: Publish verdict as commit status on PR head SHA
+        if: always() && steps.pr.outputs.head_sha != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          # On an early-step failure (e.g. fetch/eval errored), steps.scan didn't
+          # run — default to failure so the gate never silently passes.
+          VERDICT: ${{ steps.scan.outputs.verdict || 'failure' }}
+          DESCRIPTION: ${{ steps.scan.outputs.description || 'Guardrail did not complete; failing closed.' }}
+          STATUS_CONTEXT: ${{ env.STATUS_CONTEXT }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state="$VERDICT" \
+            -f context="$STATUS_CONTEXT" \
+            -f description="$DESCRIPTION" \
+            -f target_url="$RUN_URL" >/dev/null
+          echo "Published status '$STATUS_CONTEXT' = $VERDICT on head SHA $HEAD_SHA (PR #$PR_NUMBER)."
+          # Reflect the verdict in this step's exit code too (visible in logs).
+          [ "$VERDICT" = "success" ]
