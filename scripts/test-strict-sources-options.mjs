@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, copyFileSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -94,12 +94,15 @@ const PARSE_ERR = /Error parsing connection\.options\.yaml file/;
 const REACHED_CONNECT = /(\[Processing\] google_cloud_postgresql)|(Error connecting to datasource)|(ECONNREFUSED)/;
 
 async function main() {
-  if (!existsSync(connFile)) {
-    console.error(`✗ expected committed placeholder at ${connFile}`);
-    process.exit(1);
+  // `connection.options.yaml` is gitignored (only connection.yaml is tracked),
+  // so in a fresh CI checkout it does NOT exist. This test writes its own
+  // placeholder, so a pre-existing file is not required. If a developer working
+  // copy happens to have one, back it up and restore it; otherwise we created
+  // the (gitignored) fixture and remove it on cleanup to leave the tree as-is.
+  const connPreExisted = existsSync(connFile);
+  if (connPreExisted) {
+    copyFileSync(connFile, backupFile);
   }
-  // Preserve the committed placeholder; restore it no matter what.
-  copyFileSync(connFile, backupFile);
 
   let passed = 0;
   try {
@@ -133,13 +136,15 @@ async function main() {
 
     console.log(`\n✓ all ${passed} strict-sources connection-options cases passed`);
   } finally {
-    // Always restore the committed placeholder.
-    copyFileSync(backupFile, connFile);
-    try {
-      const { rmSync } = await import('node:fs');
+    // Leave the working tree exactly as we found it. If a real file pre-existed,
+    // restore it from the backup and remove the backup. Otherwise the file is the
+    // gitignored fixture this test created — remove it (test-fixture cleanup of a
+    // gitignored file, not a repo/data change).
+    if (connPreExisted) {
+      copyFileSync(backupFile, connFile);
       rmSync(backupFile, { force: true });
-    } catch {
-      /* best effort */
+    } else {
+      rmSync(connFile, { force: true });
     }
   }
 }
