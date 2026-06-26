@@ -18,7 +18,7 @@
     "validate:metadata": "node scripts/validate-asset-metadata.mjs",
     "validate:contracts": "node scripts/validate-publishing-contracts.mjs",
     "validate:refresh": "node scripts/validate-refresh-failfast.mjs",
-    "test:merge-timeout": "node scripts/test-merge-statement-timeout.mjs"
+    "test:strict-options": "node scripts/test-strict-sources-options.mjs"
   },
   "engines": {
     "node": ">=18.0.0",

@@ -17,12 +17,14 @@ import path from 'node:path';
  *
  *   1. The sources step uses `sources:strict` so a source-query error exits
  *      the step non-zero (does not swallow + continue with a stale manifest).
- *   2. The written connection options carry a bounded `statement_timeout` so a
- *      runaway/hanging query fails in seconds, not at the job timeout. The
- *      workflow delegates this to `scripts/merge-statement-timeout.mjs`, which
- *      MERGES the bound into any pre-existing `options` value (a plain
- *      "add `options:` only when absent" guard is bypassed whenever the secret
- *      already carries an unrelated `options:` key) and fails closed otherwise.
+ *   2. The source connection carries a bounded `statement_timeout` so a
+ *      runaway/hanging query fails in seconds, not at the job timeout. This is
+ *      supplied via Evidence's per-source env override
+ *      (`EVIDENCE_SOURCE__google_cloud_postgresql__options`), layered over the
+ *      connection files at load time. It is deliberately NOT written into
+ *      `connection.options.yaml`: that file is base64-encoded end-to-end, so a
+ *      plaintext `options:` value makes the strict loader reject it and breaks
+ *      every run (the FOR-591 regression this validator now guards against).
  *   3. The Linear alert step fires on `cancelled()` too — so even a genuine
  *      job-level timeout-kill (which concludes `cancelled`) still notifies.
  */
@@ -61,67 +63,55 @@ function main() {
     );
   }
 
-  // 2. Bounded statement_timeout written into the connection options.
+  // 2. Bounded statement_timeout applied to the source connection.
   //
-  // The bound must ALWAYS apply, even when the secret already carries an
-  // `options:` key for an unrelated setting. The workflow delegates this to
-  // `scripts/merge-statement-timeout.mjs`, which MERGES `-c statement_timeout`
-  // into whatever `options` value exists and fails closed otherwise. Assert:
-  //   (a) the workflow invokes the merge script with a positive timeout, and
-  //   (b) the merge script exists and contains the merge + fail-closed logic.
-  // (The old check looked for a literal `statement_timeout=15000` in the YAML;
-  // that no longer holds now that the value is computed by the merge script, so
-  // we verify the script that guarantees the bound instead.)
-  const mergeInvocation = workflow.match(
-    /node\s+scripts\/merge-statement-timeout\.mjs\s+"\$CONN_FILE"\s+(\d+)/
+  // The bound is supplied via Evidence's per-source env override
+  // (`EVIDENCE_SOURCE__<name>__options`), which Evidence layers OVER the
+  // connection files at load time. This is deliberately NOT done by rewriting
+  // `connection.options.yaml`: every value in that file is base64-encoded
+  // (Evidence base64-decodes each value via decodeBase64Deep), so writing a
+  // plaintext `options:` value into it makes the loader reject the file at
+  // "Loading plugins & sources" and breaks EVERY run (the FOR-591 regression).
+  // The env override never touches the secret file, so the secret's exact bytes
+  // (and quoting) are preserved. Assert the override is set with a positive,
+  // libpq-valid `statement_timeout` bound.
+  const optionsOverride = workflow.match(
+    /EVIDENCE_SOURCE__google_cloud_postgresql__options:\s*'([^']*)'/
   );
-  if (!mergeInvocation) {
+  if (!optionsOverride) {
     fail(
-      'the connection-write step must invoke `node scripts/merge-statement-timeout.mjs "$CONN_FILE" <ms>` ' +
-        'so the bound is MERGED into any existing `options` value (a plain "add options: only when absent" ' +
-        'guard is bypassed whenever the secret already carries an unrelated `options:` key).',
-      errors
-    );
-  } else if (!(Number.parseInt(mergeInvocation[1], 10) > 0)) {
-    fail(
-      `merge-statement-timeout is invoked with a non-positive timeout (${mergeInvocation[1]}); ` +
-        'pass a positive millisecond bound (e.g. 15000).',
-      errors
-    );
-  }
-
-  const mergeScriptPath = path.join(repoRoot, 'scripts', 'merge-statement-timeout.mjs');
-  if (!existsSync(mergeScriptPath)) {
-    fail(
-      'scripts/merge-statement-timeout.mjs is missing — it is what guarantees the statement_timeout bound ' +
-        'is merged into the written connection options.',
+      'the refresh job must set `EVIDENCE_SOURCE__google_cloud_postgresql__options` (Evidence per-source ' +
+        'env override) to bound statement_timeout WITHOUT rewriting the base64-encoded connection.options.yaml ' +
+        '(rewriting it with a plaintext `options:` value breaks the strict source loader — the FOR-591 regression).',
       errors
     );
   } else {
-    const mergeScript = readFileSync(mergeScriptPath, 'utf8');
-    // The script must actually emit a libpq statement_timeout flag...
-    if (!/statement_timeout=/.test(mergeScript)) {
+    const timeoutMatch = optionsOverride[1].match(/statement_timeout=(\d+)/);
+    if (!timeoutMatch) {
       fail(
-        'scripts/merge-statement-timeout.mjs must build a `-c statement_timeout=<ms>` libpq flag.',
+        'the `EVIDENCE_SOURCE__google_cloud_postgresql__options` override must include a ' +
+          '`-c statement_timeout=<ms>` libpq flag so a runaway query fails fast.',
+        errors
+      );
+    } else if (!(Number.parseInt(timeoutMatch[1], 10) > 0)) {
+      fail(
+        `the statement_timeout in the options override is non-positive (${timeoutMatch[1]}); ` +
+          'a 0 value DISABLES the timeout in PostgreSQL — use a positive millisecond bound (e.g. 15000).',
         errors
       );
     }
-    // ...append to (merge with) an existing options value rather than only set-when-absent...
-    if (!/existing/.test(mergeScript) || !/timeoutFlag/.test(mergeScript)) {
-      fail(
-        'scripts/merge-statement-timeout.mjs must MERGE the timeout into any existing `options` value ' +
-          '(not just set it when absent).',
-        errors
-      );
-    }
-    // ...and fail closed (process.exit(1) / die) on an unexpected format.
-    if (!/process\.exit\(1\)/.test(mergeScript)) {
-      fail(
-        'scripts/merge-statement-timeout.mjs must fail closed (exit non-zero) on an unexpected connection ' +
-          'format rather than silently running with an unbounded connection.',
-        errors
-      );
-    }
+  }
+
+  // The connection-write step must write the secret VERBATIM and must NOT parse,
+  // merge, or re-serialize the base64-encoded options file (which is what broke
+  // the strict loader). Guard against a regression that reintroduces a rewrite.
+  if (/merge-statement-timeout/.test(workflow)) {
+    fail(
+      'the daily-refresh workflow must NOT invoke a script that rewrites connection.options.yaml ' +
+        '(e.g. merge-statement-timeout) — that re-serialized the base64-encoded secret file and broke ' +
+        'the strict source loader. Supply statement_timeout via the EVIDENCE_SOURCE__ env override instead.',
+      errors
+    );
   }
 
   // 3. Alert on cancelled() too, so a timeout-kill (concludes `cancelled`) still notifies.

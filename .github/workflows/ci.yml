@@ -34,10 +34,14 @@ jobs:
       - name: Validate daily-refresh fail-fast invariants
         run: npm run validate:refresh
 
-      # Executable tests for the statement_timeout merge script. The static
-      # validator above checks the merge code exists, but cannot catch a
-      # regression where an existing `statement_timeout=0` (disabled) or an
-      # excessive value is accepted as-is (Codex round-2 P2.1). These run the
-      # script against fixtures and assert the EFFECTIVE bound.
-      - name: Test statement_timeout enforcement
-        run: npm run test:merge-timeout
+      # REAL `evidence sources --strict` regression test for the connection
+      # options + statement_timeout mechanism. The static validator above only
+      # checks the workflow wiring; this is the guard FOR-591 was MISSING — it
+      # actually runs `evidence sources --strict` against a LOCAL placeholder
+      # connection (host 127.0.0.1, never the real secret), built the way CI
+      # builds it, and asserts the run gets PAST "Loading plugins & sources"
+      # (a subsequent connect failure to the fake host is fine). It would have
+      # caught the 9-day outage: a plaintext `options:` value in the
+      # base64-encoded connection file is rejected by the strict loader.
+      - name: Test strict sources connection options
+        run: npm run test:strict-options

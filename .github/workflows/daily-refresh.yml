@@ -70,6 +70,20 @@ jobs:
       VITE_PUBLIC_SITE_BASE_URL: https://signals.fortisland.me
       VITE_HUBSPOT_FORM_BASE_URL: ${{ vars.VITE_HUBSPOT_FORM_BASE_URL }}
       VITE_HUBSPOT_CAMPAIGN_UTM_SOURCE: fortisland-signals
+      # FOR-591 fail-fast: bound EVERY source query with a server-side
+      # statement_timeout so a runaway/hung query (or a slow lock wait) fails in
+      # ~15s instead of hanging `evidence sources` to the job's 20-min
+      # timeout-minutes (which concludes `cancelled`, not `failed`, silently
+      # skipping the alert step below). Supplied via Evidence's per-source env
+      # override (`EVIDENCE_SOURCE__<name>__<option>`), which is layered OVER the
+      # connection files at load time — so the secret-written
+      # `connection.options.yaml` is NEVER parsed/rewritten and its exact bytes
+      # (and quoting) are preserved. The pg `options` field is passed straight to
+      # libpq as extra `-c key=value` flags. (Earlier mechanism — rewriting the
+      # base64-encoded options file with a plaintext `options:` value — made
+      # Evidence's loader reject the file at "Loading plugins & sources" and broke
+      # every run; the env override avoids touching the file entirely.)
+      EVIDENCE_SOURCE__google_cloud_postgresql__options: '-c statement_timeout=15000'
     steps:
       - uses: actions/checkout@v4
 
@@ -97,22 +111,13 @@ jobs:
           EVIDENCE_CONNECTION_OPTIONS_YAML: ${{ secrets.EVIDENCE_CONNECTION_OPTIONS_YAML }}
         run: |
           CONN_FILE=sources/google_cloud_postgresql/connection.options.yaml
+          # Write the secret VERBATIM — every value in this file is base64-encoded
+          # (Evidence's loader base64-decodes each value via decodeBase64Deep), so
+          # the file must NOT be parsed, merged, or re-serialized here. The
+          # statement_timeout bound is supplied separately via the
+          # EVIDENCE_SOURCE__google_cloud_postgresql__options job env var above,
+          # which Evidence layers over this file at load time without touching it.
           printf '%s' "$EVIDENCE_CONNECTION_OPTIONS_YAML" > "$CONN_FILE"
-          # FOR-591 fail-fast: bound EVERY source query with a server-side
-          # statement_timeout so a runaway/hanging query (or a slow lock wait)
-          # fails in seconds instead of hanging `evidence sources` to the job's
-          # 20-min timeout-minutes (which would conclude `cancelled`, not
-          # `failed`, and silently skip the alert step below). The pg `options`
-          # field is passed straight to libpq as extra `-c key=value` flags.
-          #
-          # The bound must ALWAYS apply. A naive "only add `options:` when
-          # absent" guard is bypassed whenever the secret already carries an
-          # `options:` key for ANY unrelated setting (e.g. application_name) —
-          # the timeout would silently never be set. So we MERGE the timeout
-          # into whatever `options` value exists (parsing the YAML), append
-          # idempotently if already present, and FAIL CLOSED if the file isn't
-          # the expected flat mapping (better to fail the run than run unbounded).
-          node scripts/merge-statement-timeout.mjs "$CONN_FILE" 15000
 
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
