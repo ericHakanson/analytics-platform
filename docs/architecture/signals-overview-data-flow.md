@@ -643,6 +643,36 @@ Consequences worth weighing before this page is linked from the marketing site:
 files involved are a few hundred bytes to a few KB and revalidation is a cheap
 `304`, so the cost is negligible.
 
+> **That first fix was incomplete, and the gap bit within the hour.** There are
+> **two** stable-URL manifests, not one. `/api/.../all-queries.json` maps page
+> queries to Arrow files; **`/data/manifest.json`** lists the source tables the
+> in-browser DuckDB registers in its catalog. Only the first was covered.
+>
+> When the nationwide state map shipped later the same day, a browser holding a
+> stale `/data/manifest.json` had no `signals_overview_state_map` in its catalog,
+> so the page rendered
+> `Catalog Error: Table with name signals_overview_state_map does not exist!`
+> in place of the map **and** its table, and fell back to stale data elsewhere —
+> the brand-new "Last refreshed" line rendered in the *old* raw-`Date` format
+> because the fallback ran against the previous build's parquet. The deployed
+> site was correct throughout: `evidence sources` logged
+> `signals_overview_state_map ✔ Finished, wrote 47 rows` and the deployed
+> manifest listed the table. Only the cached pointer was stale.
+>
+> Note this failure is *louder* than the original: a missing Arrow file renders
+> blank, a missing catalog entry renders a red error box. Both are caused by the
+> same stale pointer.
+>
+> `/data/manifest.json` now carries `no-cache` as well. The parquet files beneath
+> it are content-addressed (`/data/<source>/<table>/<hash>/<table>.parquet`) and
+> keep the default cache — only the manifest is a mutable pointer.
+>
+> **The lesson worth keeping:** when a deploy changes content-addressed file
+> names, *every* stable URL that points at them has to be revalidated. Find them
+> all before declaring this class of bug closed — the way to enumerate them is to
+> load the page with a cold cache and list the requests that are not
+> content-hashed.
+
 Two caveats recorded deliberately:
 
 - **Firebase does not document header precedence for overlapping `source`
