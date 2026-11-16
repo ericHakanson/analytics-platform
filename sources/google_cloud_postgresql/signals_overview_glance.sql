@@ -52,4 +52,11 @@ select
       and computed_at >= now() - interval '30 days'
   ) as renovation_candidates,
 
-  current_date as built_at
+  -- Formatted server-side as text on purpose. This used to be `current_date`,
+  -- which the page interpolated as a raw JS Date: the browser then re-rendered
+  -- that UTC midnight in local time, so every viewer west of UTC saw the build
+  -- date a day early. A string has no timezone for the client to shift.
+  to_char(
+    now() at time zone 'America/New_York',
+    'FMMonth FMDD, YYYY "at" FMHH12:MI AM'
+  ) as built_at
