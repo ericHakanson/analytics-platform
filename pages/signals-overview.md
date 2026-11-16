@@ -3,6 +3,15 @@ title: Fort Island Signals
 hide_title: true
 ---
 
+<script>
+  // Keep these in a script block, not inline props: the Leaflet tile template
+  // contains {z}/{x}/{y}, and inline `{...}` in an Evidence markdown page is
+  // parsed as a Svelte expression ("'z' is not defined" at build time).
+  const osmTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const osmAttribution =
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+</script>
+
 # Signals Overview
 
 Coverage across property listings, sales activity, renovation scoring, and geographic reach. All activity statistics reflect the **trailing 30 days** and are refreshed each time this page is built.
@@ -57,8 +66,8 @@ select * from google_cloud_postgresql.signals_overview_county_map
     startingLong=-71.8
     startingZoom=7
     legend=true
-    basemap="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-    attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    basemap={osmTileUrl}
+    attribution={osmAttribution}
 />
 
 ## Renovation Funnel

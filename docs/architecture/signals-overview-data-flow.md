@@ -472,11 +472,20 @@ Two independent fixes, both one-line:
 1. Pass a keyless tile source, or
 2. Get a CARTO account and append its key to the default URL.
 
-**Resolved 2026-11-16** by option 1: the page now passes
-`basemap="https://tile.openstreetmap.org/{z}/{x}/{y}.png"` with the required
+**Resolved 2026-11-16** by option 1: the page passes a `basemap` of
+`https://tile.openstreetmap.org/{z}/{x}/{y}.png` with the required
 `attribution`. If this page's traffic ever grows beyond light use, OSM's tile
 usage policy expects a move to a paid or self-hosted tile source — option 2 is
 the obvious successor.
+
+> **Gotcha, learned the hard way.** A Leaflet tile template contains
+> `{z}/{x}/{y}`, and inline `{...}` in an Evidence **markdown** page is parsed as
+> a Svelte expression — passing the URL as a plain inline prop fails the build
+> with `'z' is not defined` at `.evidence/template/src/pages/signals-overview/+page.md`.
+> (Evidence's own default never hits this because it lives in a `.svelte` file.)
+> Define the URL in a `<script>` block at the top of the page and pass it by
+> name. Note this breaks the **build**, not the site: `evidence build` fails
+> before the Firebase deploy step, so the previous good build keeps serving.
 
 The choropleth itself — the county polygons and their values — is drawn from
 `static/geo/ma-counties.geojson` and the query, and is unaffected by the basemap.
