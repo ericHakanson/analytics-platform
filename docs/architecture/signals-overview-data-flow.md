@@ -136,6 +136,11 @@ files (at build time and in the browser), which is why Firebase can serve the
 whole site as static files with no server-side compute. The page is a **snapshot
 taken at build time** — it never queries Cloud SQL from a visitor's browser.
 
+At runtime the page fetches a small `all-queries.json` manifest at a stable URL,
+then one content-hashed `.arrow` file per query from `/api/prerendered_queries/`.
+That split is what makes [Finding 4](#finding-4--a-stale-query-manifest-renders-a-chart-silently-blank)
+possible: the manifest is cacheable and the file names are not stable.
+
 Routing: `pages/index.md` is a client-side redirect to `/signals-overview`, so
 `/signals-overview` is effectively the entire site. `firebase.json` sets
 `public: build`, `cleanUrls: true`, a catch-all rewrite to `/index.html`, 1-hour
@@ -570,6 +575,61 @@ renders `built_at` as a raw JavaScript `Date`. The build produced the Postgres
 same instant as **Tue Aug 25 2026**, one day earlier than the actual build. The
 displayed date is systematically a day behind for any viewer west of UTC. Format
 it as a plain date string rather than interpolating a `Date`.
+
+### Finding 4 — a stale query manifest renders a chart silently blank
+
+Found on 2026-11-16 while verifying a deploy, and **not fixed**. This one matters
+more than it looks, because its failure mode is invisible: no error, no empty
+state, just a chart that isn't there.
+
+How the page gets its numbers at runtime:
+
+| Request | URL shape | Stable across deploys? |
+|---|---|---|
+| Query manifest | `/api/<route-hash>/<hash>/all-queries.json` | **yes** — same URL every deploy |
+| Query results | `/api/prerendered_queries/<content-hash>.arrow` | **no** — the name changes whenever the data changes |
+
+The manifest is a tiny JSON mapping each page query to its current Arrow file:
+
+```json
+{"glance_data":"922fefb1…","county_map_data_data":"394ed014…","funnel_data":"e7b3bd06…"}
+```
+
+`firebase.json` gives everything outside `/_evidence/**` —
+**including `/api/**`** — `public, max-age=3600, stale-while-revalidate=86400`.
+So for an hour after a deploy (and up to a day under `stale-while-revalidate`), a
+returning visitor can hold a **stale manifest** naming an Arrow file the new
+deploy no longer contains.
+
+What happens then is the nasty part. `firebase.json` also rewrites `**` to
+`/index.html`, so the missing Arrow file does **not** 404 — it returns the
+page's own HTML with **HTTP 200** and `content-type: text/html`. The client
+cannot tell the file is missing; it just fails to parse and the component renders
+empty.
+
+Observed concretely on this page: before the 2026-11-16 label change
+`funnel_data` was `c230caf00caebff272415f13c20c3f68`; after it, `e7b3bd06…`.
+A browser holding the pre-deploy manifest requested the `c230caf0…` file, got
+8,272 bytes of `<!doctype html>` back with a 200, and the Renovation Funnel
+rendered as blank space under its own heading and prose. The glance tiles and the
+map were unaffected, because their Arrow files happened not to change that deploy
+— so the page looked *partly* fine, which makes it harder to spot.
+
+Consequences worth weighing before this page is linked from the marketing site:
+
+- Any deploy that changes a number — i.e. **every nightly refresh** — can leave
+  recent visitors with a silently blank chart for up to an hour.
+- A Squarespace iframe embed inherits the same behaviour.
+- Nothing alerts on it. The build is green, the deploy is green, and the page
+  returns 200.
+
+Fix direction (one line, not applied here): serve the manifests uncached —
+a `/api/**` headers entry with `Cache-Control: no-cache` — so the manifest is
+always revalidated while the content-hashed Arrow files keep their long cache.
+The files are a few hundred bytes, so the cost is negligible. A `404.html` or a
+narrower rewrite would also stop a missing data file masquerading as a 200, which
+is worth doing regardless: it converts a silent blank into a visible, debuggable
+failure.
 
 ---
 
