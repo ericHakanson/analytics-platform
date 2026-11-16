@@ -467,12 +467,16 @@ account reference anywhere** in this project. So this is not an expired Fort
 Island credential: CARTO began gating that formerly-open basemap endpoint, and
 Evidence's hard-coded default now returns watermark tiles for everyone.
 
-Two independent fixes, both one-line, neither applied here:
+Two independent fixes, both one-line:
 
-1. Pass a keyless tile source, e.g.
-   `basemap="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"` (check OSM's
-   tile usage policy for a published page), or
+1. Pass a keyless tile source, or
 2. Get a CARTO account and append its key to the default URL.
+
+**Resolved 2026-11-16** by option 1: the page now passes
+`basemap="https://tile.openstreetmap.org/{z}/{x}/{y}.png"` with the required
+`attribution`. If this page's traffic ever grows beyond light use, OSM's tile
+usage policy expects a move to a paid or self-hosted tile source — option 2 is
+the obvious successor.
 
 The choropleth itself — the county polygons and their values — is drawn from
 `static/geo/ma-counties.geojson` and the query, and is unaffected by the basemap.
@@ -531,6 +535,24 @@ seen in the last 30 days"**, not "new properties". Two consequences:
   `properties` by `created_at` day over that window; the same split by whether a
   `property_detail_snapshots` row exists; and `town_runs` stage statuses and
   `new_listing_count` for August.
+
+> **Update, 2026-11-16 — structural, not the regression.** The refresh was
+> re-enabled and a `workflow_dispatch` build deployed the same day. On fresh
+> data the funnel reads **1,545 → 1,545 → 1,545 → 295 (19.09%)** — now *three*
+> identical stages, so this was never a symptom of the pre-FOR-1014 scraping
+> regression. The same build's "Properties Scraped" tile is **1,695**, which is
+> *larger* than the funnel's own base of 1,545. The base therefore cannot be
+> "properties observed in a listing feed" as the page's prose claimed: rows
+> reach `properties` as they are **enriched**, which makes stages 1–3
+> tautological by construction and leaves the stage-4 candidate rate as the only
+> informative number. The stage label and the page prose were corrected the same
+> day; the underlying query semantics were left alone, since redefining the
+> funnel's base is a product decision, not a labelling fix.
+>
+> The same build also shows **States Covered = 47** against a page whose map is a
+> Massachusetts choropleth — either substantial out-of-region history in
+> `properties` or an address-parsing problem, and the funnel counts all of it.
+> Not investigated here.
 
 **(d) Minor, but it caused the confusion in the first place:** the freshness line
 renders `built_at` as a raw JavaScript `Date`. The build produced the Postgres
