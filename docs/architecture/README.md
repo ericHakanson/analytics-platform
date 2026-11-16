@@ -11,6 +11,7 @@ Current repo-level implementation conventions include:
 
 - `docs/architecture/asset-conventions.md`
 - `docs/architecture/publishing-contracts.md`
+- `docs/architecture/signals-overview-data-flow.md` — end-to-end data flow behind `/signals-overview`: rsre scrape on the Mac Mini → Cloud SQL → Evidence sources → DuckDB build → Firebase; refresh mechanics and current known defects
 - shared layout and content blocks under `components/layout/` and `components/blocks/`
 
 ## Integration conventions
