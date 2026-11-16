@@ -17,11 +17,11 @@ select * from google_cloud_postgresql.signals_overview_glance
 
 **Portfolio**
 
-<BigValue data={glance} value="total_properties" title="Total Properties" fmt="num0" />
+<BigValue data={glance} value="total_properties" title="Total Properties (All Time)" fmt="num0" />
 
-<BigValue data={glance} value="states_covered" title="States Covered" fmt="num0" />
+<BigValue data={glance} value="states_covered" title="States Covered (All Time)" fmt="num0" />
 
-<BigValue data={glance} value="municipalities_covered" title="Municipalities Covered" fmt="num0" />
+<BigValue data={glance} value="municipalities_covered" title="Municipalities Covered (30 Days)" fmt="num0" />
 
 **Market Activity — Trailing 30 Days**
 
@@ -57,11 +57,13 @@ select * from google_cloud_postgresql.signals_overview_county_map
     startingLong=-71.8
     startingZoom=7
     legend=true
+    basemap="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 />
 
 ## Renovation Funnel
 
-Properties enter the funnel when first observed in a listing feed. Each subsequent stage requires an additional data signal — a detail snapshot, a computed renovation score, and finally meeting the renovation candidate threshold.
+The funnel covers properties added to the portfolio in the trailing 30 days, across all states. Each stage is a strict subset of the one above it: a detail snapshot, then a computed renovation score, then meeting the renovation candidate threshold. Because properties are added as they are enriched, the first three stages normally track each other closely — the candidate rate at the final stage is the meaningful yield.
 
 ```sql funnel
 select * from google_cloud_postgresql.signals_overview_funnel
