@@ -623,13 +623,30 @@ Consequences worth weighing before this page is linked from the marketing site:
 - Nothing alerts on it. The build is green, the deploy is green, and the page
   returns 200.
 
-Fix direction (one line, not applied here): serve the manifests uncached —
-a `/api/**` headers entry with `Cache-Control: no-cache` — so the manifest is
-always revalidated while the content-hashed Arrow files keep their long cache.
-The files are a few hundred bytes, so the cost is negligible. A `404.html` or a
-narrower rewrite would also stop a missing data file masquerading as a 200, which
-is worth doing regardless: it converts a silent blank into a visible, debuggable
-failure.
+**Fixed 2026-11-16** by adding a `/api/**` headers entry with
+`Cache-Control: no-cache`, so the manifest is revalidated on every load. The
+files involved are a few hundred bytes to a few KB and revalidation is a cheap
+`304`, so the cost is negligible.
+
+Two caveats recorded deliberately:
+
+- **Firebase does not document header precedence for overlapping `source`
+  globs.** `full-config` says only that "Matching rules are applied in the order
+  they are defined"; the explicit *first-rule-wins* language covers redirects and
+  rewrites, not headers, and nothing states what happens when two matching
+  entries set the same header name. So `/api/**` overriding `/**` is **verified
+  empirically against the deployed site**, not assumed — if you restructure this
+  block, re-check with `curl -I` rather than trusting the ordering.
+- The `/_evidence/**` entry above it is **dead**: no such path is served. The
+  content-hashed assets actually live under `/_app/immutable/**`, which therefore
+  gets the one-hour rule rather than the intended immutable one. Harmless but
+  wasteful, and left alone here to keep this change to the correctness fix.
+
+Still outstanding: a missing data file continues to return the SPA fallback with
+**HTTP 200** rather than a 404, because of the `**` rewrite. The caching fix
+removes the common way to *reach* that state, but not the state itself. A
+`404.html` or a narrower rewrite would convert a silent blank chart into a
+visible, debuggable failure, and is worth doing on its own merits.
 
 ---
 
