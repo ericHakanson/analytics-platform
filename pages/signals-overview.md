@@ -14,9 +14,11 @@ hide_title: true
 
 # Signals Overview
 
+**Last refreshed:** {glance[0].built_at} ET
+
 Coverage across property listings, sales activity, renovation scoring, and geographic reach. All activity statistics reflect the **trailing 30 days** and are refreshed each time this page is built.
 
-> **Data freshness:** Built from live database snapshots on {glance[0].built_at}. Renovation scores use Fort Island's v2 model; candidate thresholds are reviewed quarterly.
+> **About this data:** Built from live database snapshots. Renovation scores use Fort Island's v2 model; candidate thresholds are reviewed quarterly.
 
 ## Geographic Coverage At a Glance
 
@@ -47,6 +49,36 @@ select * from google_cloud_postgresql.signals_overview_glance
 <BigValue data={glance} value="properties_scored" title="Properties Scored" fmt="num0" />
 
 <BigValue data={glance} value="renovation_candidates" title="Renovation Candidates" fmt="num0" />
+
+## Nationwide Coverage
+
+```sql state_map_data
+select * from google_cloud_postgresql.signals_overview_state_map
+```
+
+<AreaMap
+    data={state_map_data}
+    geoJsonUrl="/geo/us-states.geojson"
+    geoId="state"
+    areaCol="state"
+    value="total_properties"
+    valueFmt="num0"
+    title="Properties by State (All Time)"
+    startingLat=39.5
+    startingLong=-98.35
+    startingZoom=3
+    height=420
+    legend=true
+    basemap={osmTileUrl}
+    attribution={osmAttribution}
+/>
+
+Scheduled collection currently runs in Essex and Middlesex counties, Massachusetts. Records outside Massachusetts are earlier or incidental coverage rather than active monitoring, so this map shows reach to date — not where the pipeline is running now. The table below gives the figures behind it.
+
+<DataTable data={state_map_data} rows=10>
+    <Column id=state title="State" />
+    <Column id=total_properties title="Properties" fmt="num0" contentType=colorscale />
+</DataTable>
 
 ## Properties by County
 

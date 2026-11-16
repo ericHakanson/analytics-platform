@@ -157,9 +157,18 @@ against the `google_cloud_postgresql` source and nothing else:
 
 | Page block | Source query file | Rendered by |
 |---|---|---|
-| `glance` | `sources/google_cloud_postgresql/signals_overview_glance.sql` | 9 × `<BigValue>` + the `built_at` freshness line |
+| `glance` | `sources/google_cloud_postgresql/signals_overview_glance.sql` | 9 × `<BigValue>` + the `built_at` "Last refreshed" line at the top of the page |
+| `state_map_data` | `sources/google_cloud_postgresql/signals_overview_state_map.sql` | `<AreaMap>` ("Properties by State (All Time)") + its `<DataTable>` |
 | `county_map_data` | `sources/google_cloud_postgresql/signals_overview_county_map.sql` | `<AreaMap>` ("Properties by County") |
 | `funnel` | `sources/google_cloud_postgresql/signals_overview_funnel.sql` | `<FunnelChart>` ("Property → Candidate Funnel") |
+
+The nationwide map (added 2026-11-16) reads `properties` only, so it needed no
+new `GRANT` — see the grant note below. It is **all-time on purpose**: scheduled
+collection is Essex + Middlesex MA, so a trailing-30-day national map would be
+Massachusetts and bare canvas. It is keyed on USPS two-letter codes against
+`static/geo/us-states.geojson`, which carries a `state` property added for that
+purpose; a row whose `state` is not a two-letter code never joins and is
+excluded by the query too, so map and table agree.
 
 ### 2.1 Tables read
 
@@ -569,12 +578,18 @@ seen in the last 30 days"**, not "new properties". Two consequences:
 > Not investigated here.
 
 **(d) Minor, but it caused the confusion in the first place:** the freshness line
-renders `built_at` as a raw JavaScript `Date`. The build produced the Postgres
-`date` `2026-08-26`, which the served HTML shows as
-`Wed Aug 26 2026 00:00:00 GMT+0000`; a browser in Eastern time re-renders that
-same instant as **Tue Aug 25 2026**, one day earlier than the actual build. The
-displayed date is systematically a day behind for any viewer west of UTC. Format
-it as a plain date string rather than interpolating a `Date`.
+rendered `built_at` as a raw JavaScript `Date`. The build produced the Postgres
+`date` `2026-08-26`, which the served HTML showed as
+`Wed Aug 26 2026 00:00:00 GMT+0000`; a browser in Eastern time re-rendered that
+same instant as **Tue Aug 25 2026**, one day earlier than the actual build — so
+the displayed date was systematically a day behind for any viewer west of UTC.
+
+**Fixed 2026-11-16.** `built_at` is now formatted server-side as text
+(`to_char(now() at time zone 'America/New_York', …)`), which leaves the client no
+timezone to shift, and the result is surfaced as a **"Last refreshed" line at the
+top of the page** rather than buried in the caveat blockquote. Anything added
+later that wants a date on this page should follow the same rule: format in SQL,
+never interpolate a bare `Date` into Evidence markdown.
 
 ### Finding 4 — a stale query manifest renders a chart silently blank
 
@@ -637,6 +652,12 @@ Two caveats recorded deliberately:
   entries set the same header name. So `/api/**` overriding `/**` is **verified
   empirically against the deployed site**, not assumed — if you restructure this
   block, re-check with `curl -I` rather than trusting the ordering.
+  **Measured 2026-11-16 after deploy:** `/api/pagesManifest.json` and
+  `/api/prerendered_queries/<hash>.arrow` both return `cache-control: no-cache`,
+  while `/signals-overview` still returns
+  `public, max-age=3600, stale-while-revalidate=86400`. The later, more specific
+  entry does win — but that is an observation about current behaviour, not a
+  documented guarantee.
 - The `/_evidence/**` entry above it is **dead**: no such path is served. The
   content-hashed assets actually live under `/_app/immutable/**`, which therefore
   gets the one-hour rule rather than the intended immutable one. Harmless but
@@ -674,7 +695,8 @@ visible, debuggable failure, and is worth doing on its own merits.
 | `pages/index.md` | client-side redirect → `/signals-overview` |
 | `pages/signals-overview.md` | the one real page; three SQL blocks |
 | `sources/google_cloud_postgresql/connection.yaml` | 45-byte stub (name + type); credentials live in gitignored `connection.options.yaml` |
-| `sources/google_cloud_postgresql/signals_overview_{glance,county_map,funnel}.sql` | the three live queries |
+| `sources/google_cloud_postgresql/signals_overview_{glance,state_map,county_map,funnel}.sql` | the four live queries |
+| `static/geo/us-states.geojson` | state polygons for the nationwide AreaMap; normalised to carry `name`, `state` (USPS) and `fips` |
 | `sources/publishing_contracts/` | in-memory DuckDB over `data/contracts/csv/*.csv` — unused by the live page |
 | `static/geo/ma-counties.geojson` | county polygons for the AreaMap |
 | `.github/workflows/daily-refresh.yml` | nightly rebuild + deploy (currently `disabled_inactivity`) |
