@@ -375,6 +375,11 @@ Dependency answer, precisely:
 
 ## 5. Recent change note — rsre geo-scoping fix (FOR-1014)
 
+> **Read this section with Finding 5.** FOR-1014 repaired the per-ZIP URL and
+> re-enabled zip mode; it is *not* what stopped the out-of-state writes. That
+> was FOR-786/FOR-793 on 2026-08-01/02, eighteen days earlier, as the
+> `properties` timestamps show.
+
 - **Commit `79bd3a7`**, PR
   [ericHakanson/recently-sold-real-estate#21](https://github.com/ericHakanson/recently-sold-real-estate/pull/21),
   authored 2026-08-19, **merged 2026-08-20T00:34Z**. It is the current tip of
@@ -575,7 +580,8 @@ seen in the last 30 days"**, not "new properties". Two consequences:
 > The same build also shows **States Covered = 47** against a page whose map is a
 > Massachusetts choropleth — either substantial out-of-region history in
 > `properties` or an address-parsing problem, and the funnel counts all of it.
-> Not investigated here.
+> **Resolved 2026-11-16: it is real out-of-region history, not an address-parsing
+> problem.** See Finding 5.
 
 **(d) Minor, but it caused the confusion in the first place:** the freshness line
 rendered `built_at` as a raw JavaScript `Date`. The build produced the Postgres
@@ -701,12 +707,121 @@ visible, debuggable failure, and is worth doing on its own merits.
 
 ---
 
+### Finding 5 — the 12,003 out-of-state rows are real, and the fix credited with stopping them didn't
+
+**Measured 2026-11-16** with read-only `SELECT`s against `real_estate`
+(`SET default_transaction_read_only = on` plus `BEGIN READ ONLY`, as
+`signals_dashboard_reader` — the dashboard's own read-only role, narrower than
+`recent_sales_reader` and already holding the grants on `properties`).
+
+| | rows |
+|---|---|
+| `properties`, all time | 79,688 |
+| Massachusetts | 67,685 |
+| 46 other states | 12,003 (15.1%) |
+
+47 distinct `state` values with no NULL or blank ones, so `States Covered = 47`
+is counting real two-letter states and the nationwide map hides nothing.
+
+**It is not an address-parsing problem.** In a 25-row random sample of non-MA
+rows, every row carries a ZIP belonging to its state — DE 19802, TN 37203,
+NJ 07726, CA 92335/90034/92869/96003, NY 11784/14623, NC 27527/27520/27020,
+PA 19083/19601, KS 66061, VA 23069, OH 44055. Not one MA ZIP on a non-MA row.
+`address_utils.py` is doing its job; these describe genuinely out-of-state
+properties that Zillow returned.
+
+They arrive in bursts, which is the signature of a whole-region result set rather
+than scattered mis-hits: every Manalapan/Englishtown NJ 07726 row in the sample
+landed inside a four-minute window on 2026-03-02.
+
+#### What actually stopped it — and it was not FOR-1014
+
+`max(created_at)` per state is a **last-seen** timestamp on the listing path
+(see Finding 3(c) and `load_zillow_listings.py:291`), so it dates the last time
+the scraper wrote that row. 44 of the 46 out-of-state states were last seen on or
+before **2026-08-02**; the other 42 stop in July. The complete set touched in
+August or later is:
+
+| non-MA state | last seen (UTC) |
+|---|---|
+| TX | 2026-08-02 20:41 |
+| AL | 2026-08-02 20:43 |
+| NH | 2026-08-20 10:10 |
+| FL | 2026-09-25 02:31 |
+
+FOR-1014 is routinely credited with ending the out-of-state writes, and §5 of
+this document repeats that. **It did not.** Three rsre commits land on exactly
+the observed cutoff, eighteen days earlier:
+
+| commit | date | what it did |
+|---|---|---|
+| `4da9f10` | 2026-08-01 | FOR-786: make **town** the default sold-discovery mode, retiring per-ZIP |
+| `99eb1b8` | 2026-08-02 | FOR-793: geo-sanity **pre-write gate** — blocks wrong-region SOLD batches at the door |
+| `ceca06a` | 2026-08-02 | FOR-792: NEW_SALE signal-floor alarm |
+
+So the real sequence is: through 2026-07-31 the scraper ran per-ZIP against the
+region-less Zillow URL, which served fallback metro regions, and wrote genuine
+out-of-state cards — the 12,003 rows, March to July. On 08-01 FOR-786 switched
+the default to town-scoped URLs, which do not hit fallback regions. On 08-02
+FOR-793 added a pre-write gate that rejects wrong-region batches regardless of
+mode. The TX and AL rows at 20:41 and 20:43 on 08-02 are the last batch through
+the door. FOR-1014 (`79bd3a7`, 2026-08-19 20:34 ET = **2026-08-20 00:34 UTC**)
+came later and did something different: it repaired the per-ZIP URL so zip mode
+could be safely re-enabled for roughly 6× dense-town depth, and flipped the Mini
+back to zip. An improvement, not the stopper.
+
+Splitting FOR-786 from FOR-793 as the proximate cause needs the Mini's `.env`
+and deploy history, which is not readable from here. The gate is the surer
+mechanism, since it blocks writes irrespective of mode and merged on the exact
+stop date.
+
+#### The two post-fix groups, and a real gap in the gate
+
+Neither is a continuing region leak, but one of them exposes a structural blind
+spot:
+
+- **Three rows in Plaistow, NH 03865**, at 10:10:46, :49 and :53 UTC on
+  2026-08-20 — a single seven-second batch, and note that this is **9.5 hours
+  after** FOR-1014 flipped the Mini back to zip mode, not before it. Plaistow
+  abuts Haverhill, in Essex County, which is monitored. Real NH addresses with a
+  correct NH ZIP. This is **border bleed** from a zip-bounds search of a border
+  town — a different mechanism from fallback-region substitution, and not a
+  regression of the old bug.
+- **One row, `Shearwater Parkway`, `Saint augustine`, FL 32092**, 2026-09-25. No
+  house number, city cased as `Saint augustine` where every other sampled row is
+  title-cased, and `latitude`, `longitude`, `property_type` and `county` all
+  NULL — created by the listing loader and never enriched. A community or
+  new-construction listing that slipped through once in two months.
+
+Both slip past FOR-793 for the same reason: **the gate asserts on a batch-level
+in-state fraction, not per property.** Three border properties inside an
+otherwise-Massachusetts batch pass the fraction test, and so does a lone
+out-of-state straggler. FOR-1014's own `GEO-VERIFY-EVIDENCE` has the same shape —
+it asserts *towns* ("41/41 in-state"), so property-level bleed cannot trip it
+either. A per-property assertion would catch both classes. Low priority on the
+evidence: four rows in three months.
+
+All four rows have `county` NULL, so none of them can reach the county map, which
+joins `target_regions`.
+
+#### Collateral finding: collection never stopped
+
+The Massachusetts rows' `max(created_at)` was **2026-11-16 23:26 UTC**, minutes
+before this query ran. The Mini has been writing to Cloud SQL continuously
+throughout the dashboard's three-month staleness. That independently confirms
+Finding 1 from the data side: the outage was entirely publish-side, and no
+collected data was lost — tonight's run has about three months of accumulated
+Massachusetts data waiting for it.
+
+---
+
 ## 7. Open items this document could not verify
 
 | Item | Why | How to close it |
 |---|---|---|
 | Whether the Mini is still scraping at all, and in which `SOLD_DISCOVERY_MODE` | This checkout is on a MacBook Air; no `launchd` jobs, and the local `.env` has no `SOLD_DISCOVERY_MODE` | Check `launchctl list` and `.env` on the Mini; read `logs/town_batches/` and recent `town_runs` rows |
-| Actual row counts behind the funnel's 100% first transition | Needs DB access; credentials deliberately not read | Read-only `SELECT`s as `recent_sales_reader` |
+| Actual row counts behind the funnel's 100% first transition | The 2026-11-16 read-only session covered `properties` only, not the funnel's stage tables | Read-only `SELECT`s as `signals_dashboard_reader` against `property_detail_snapshots` and `property_renovation_scores` |
+| Whether FOR-786 (town default) or FOR-793 (pre-write gate) was the proximate stop on 2026-08-02 | Needs the Mini's `.env` and deploy history; not readable from this machine | Compare the Mini's deployed `SOLD_DISCOVERY_MODE` and deploy timestamps against the two commit dates (Finding 5) |
 | Current shard coverage (88 municipalities, Essex + Middlesex) | Stated by the briefing as of 2026-04-13 | `scripts/ema_shards.py` on the Mini + recent `town_runs.geography` distinct values |
 | Whether the Aug-20 → Aug-26 window already shows the FOR-1014 `LATE_SALE` lift | Same DB access gap | `town_runs.late_sale_count` by `cycle_date` across August |
 | Evidence.dev licensing/pricing position | Out of scope for this doc | Separate evaluation |
